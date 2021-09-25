@@ -14,7 +14,7 @@ function App() {
   return (
     <Container>
       {posts.map((post) => (
-        <Post>
+        <Post contentEditable>
           {post.split("\n").map((line) => (
             <p>{line}</p>
           ))}
@@ -25,7 +25,10 @@ function App() {
 }
 
 const posts = [
-  `I don't make the notes be what I want them to be anymore
+  `
+  |-|-|*-*-*-|||| august 6 2021 ||||-*-*-*|-|-|
+
+  I don't make the notes be what I want them to be anymore
 
   I let them be boring & work within that because I know that's the truth
   
@@ -35,9 +38,7 @@ const posts = [
   
   truth can change faster than anything
   
-  but it flows & the fluid is full of life & "meaning"
-  
-  -- August 6 2021`,
-];
+  but it flows & the fluid is full of life & "meaning"`,
+].map((s) => s.trim());
 
 export default App;
