@@ -14,7 +14,7 @@ function App() {
   return (
     <Container>
       {posts.map((post) => (
-        <Post contentEditable>
+        <Post>
           {post.split("\n").map((line) => (
             <p>{line}</p>
           ))}
