@@ -36,9 +36,10 @@ const Row = styled.div`
   font-size: 20px;
 `;
 const Skills = styled.div`
-  margin: 25px 20% 0 20%;
+  margin: 10px 20% 0 20%;
 
   display: flex;
+  justify-content: center;
   margin-bottom: 20px;
 `;
 
@@ -61,7 +62,7 @@ const Comma = styled.div`
 `;
 
 const Details = styled.details`
-  transition: background-color 250ms ease-out 20ms;
+  transition: background-color 250ms ease-out 0ms;
   &:hover {
     background-color: white;
   }
@@ -107,7 +108,7 @@ const Item = ({ title, position, dateRange, children }) => {
 
 function App() {
   const skills = [
-    ["JavaScript", "React", "TypeScript", "Elm", "Node"],
+    ["JavaScript", "React", "TypeScript", "Node.js", "Elm", "Haskell"],
     ["SQL (MySQL, PostgreSQL)", "NoSQL (Redis, Mongo)"],
   ];
   return (
@@ -128,9 +129,6 @@ function App() {
       </div> */}
       <Body>
         <Skills>
-          <Key>
-            <h2>Skills</h2>
-          </Key>
           <Value>
             <Row>
               {skills[0].map((skill) => (
