@@ -1,19 +1,25 @@
 import styled from "styled-components";
+import Skills from "./Skills";
 
-const Container = styled.div`
+const Main = styled.div`
   font-size: 20px;
+  hr {
+    margin: 0;
+  }
   h1 {
+    margin: 0;
     font-size: 60px;
   }
   h2 {
+    margin: 0;
     font-size: 40px;
   }
   h3 {
+    margin: 0;
     font-size: 27px;
   }
-  * {
+  p {
     margin: 0;
-    padding: 0;
   }
 `;
 
@@ -25,40 +31,6 @@ const Header = styled.div`
   hr {
     width: 100%;
   }
-`;
-
-const Body = styled.div``;
-
-const Row = styled.div`
-  display: flex;
-  margin: 0;
-  padding: 0;
-  font-size: 20px;
-`;
-const Skills = styled.div`
-  margin: 10px 20% 0 20%;
-
-  display: flex;
-  justify-content: center;
-  margin-bottom: 20px;
-`;
-
-const Key = styled.div`
-  width: 200px;
-`;
-const Value = styled.div``;
-const SkillItem = styled.a`
-  color: unset;
-  &:active {
-    color: gray;
-  }
-
-  &:hover {
-  }
-`;
-
-const Comma = styled.div`
-  margin-right: 5px;
 `;
 
 const Details = styled.details`
@@ -108,11 +80,14 @@ const Item = ({ title, position, dateRange, children }) => {
 
 function App() {
   const skills = [
-    ["JavaScript", "React", "TypeScript", "Node.js", "Elm", "Haskell"],
-    ["SQL (MySQL, PostgreSQL)", "NoSQL (Redis, Mongo)"],
+    ["JavaScript", "React", "TypeScript", "Node.js", "Ruby"],
+    [
+      ["SQL", ["MySQL", "PostgreSQL"]],
+      ["NoSQL", ["Redis", "Mongo"]],
+    ],
   ];
   return (
-    <Container>
+    <Main>
       <Header>
         <h1>Marcelle Rusu</h1>
         <hr></hr>
@@ -127,79 +102,53 @@ function App() {
           about front-end, music & language design.
         </em>
       </div> */}
-      <Body>
-        <Skills>
-          <Value>
-            <Row>
-              {skills[0].map((skill) => (
-                <>
-                  <SkillItem href="#4" onClick={(e) => e.preventDefault()}>
-                    {skill}
-                  </SkillItem>
-                  <Comma>,</Comma>
-                </>
-              ))}
-            </Row>
-            <Row>
-              {skills[1].map((skill, i, arr) => (
-                <>
-                  <SkillItem href="#4" onClick={(e) => e.preventDefault()}>
-                    {skill}
-                  </SkillItem>
-                  {i !== arr.length - 1 && <Comma>,</Comma>}
-                </>
-              ))}
-            </Row>
-          </Value>
-        </Skills>
-        <Item
-          title="NoRedInk"
-          position="Full-Stack Engineer"
-          dateRange="Sept 2021 - Present"
-        >
-          Created
-        </Item>
-        <Item
-          title="Vidyard"
-          position="Software Developer"
-          dateRange="Sept 2020 - August 2021"
-        >
-          Created
-        </Item>
-        <Item
-          title="BitBakery Software"
-          position="Full-Stack Developer"
-          dateRange="Jan 2019 - August 2020"
-        >
-          Created
-        </Item>
-        <Item
-          title="MappedIn"
-          position="Software Developer (Intern)"
-          dateRange="Sept 2018 - Dec 2018"
-        >
-          Created
-        </Item>
-        <Item
-          title="Alida (FKA Vision Critical)"
-          position="Software Developer (Intern)"
-          dateRange="May 2017 - Dec 2017"
-        >
-          Created
-        </Item>
-        <Item
-          title="Peacock Programming Language"
-          position="Personal Project"
-          dateRange="2021"
-        >
-          Created
-        </Item>
-
-        <Item title="Component TS" position="Personal Project" dateRange="2017">
-          Created
-        </Item>
-      </Body>
-    </Container>
+      <Skills skills={skills} />
+      <Item
+        title="NoRedInk"
+        position="Full-Stack Engineer"
+        dateRange="Sept 2021 - Present"
+      >
+        Created
+      </Item>
+      <Item
+        title="Vidyard"
+        position="Software Developer"
+        dateRange="Sept 2020 - August 2021"
+      >
+        Created
+      </Item>
+      <Item
+        title="BitBakery Software"
+        position="Full-Stack Developer"
+        dateRange="Jan 2019 - August 2020"
+      >
+        Created
+      </Item>
+      <Item
+        title="MappedIn"
+        position="Software Developer (Intern)"
+        dateRange="Sept 2018 - Dec 2018"
+      >
+        Created
+      </Item>
+      <Item
+        title="Alida (FKA Vision Critical)"
+        position="Software Developer (Intern)"
+        dateRange="May 2017 - Dec 2017"
+      >
+        Created
+      </Item>
+      <Item
+        title="Peacock Programming Language"
+        position="Personal Project"
+        dateRange="2021"
+      >
+        Created
+      </Item>
+      <Item title="Component TS" position="Personal Project" dateRange="2017">
+        Created
+      </Item>
+    </Main>
   );
 }
 
