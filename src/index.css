@@ -1,27 +1,12 @@
+@import url("https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+Antique:wght@300&display=swap");
 body {
-  background: hsl(0, 0%, 0%);
-  margin: 100px 20% 0 20%;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
-    "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
-    sans-serif;
+  background: #f8f8ff;
+  font-family: "Zen Kaku Gothic Antique", sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-@media screen and (max-width: 600px) {
-  body {
-    margin: 100px 0;
-  }
-}
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
     monospace;
-}
-
-div p:first-child {
-  margin-top: 0;
-}
-
-div p:last-child {
-  margin-bottom: 0;
 }
