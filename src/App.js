@@ -52,7 +52,7 @@ function App() {
     ],
   ];
   return (
-    <Main>
+    <Main id="main">
       <Header>
         <h1>Marcelle Rusu</h1>
         <hr></hr>
