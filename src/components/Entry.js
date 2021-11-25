@@ -71,20 +71,22 @@ const useActualHeight = (detailsRef) => {
   }, []);
   useEffect(() => {
     if (!detailsRef.current) return;
-    const details = detailsRef.current;
-    const content = details.querySelector(":scope > div");
-    // hack to make the element visible so we can calculate the content height
-    const clone = details.cloneNode(true);
-    document.querySelector("#main").append(clone);
-    clone.open = true;
-    clone.append(content);
-    setHeights([
-      `${details.offsetHeight}px`,
-      `${details.offsetHeight + content.offsetHeight}px`,
-    ]);
-    // add back the content
-    details.append(content);
-    clone.remove();
+    window.setTimeout(() => {
+      const details = detailsRef.current;
+      const content = details.querySelector(":scope > div");
+      // hack to make the element visible so we can calculate the content height
+      const clone = details.cloneNode(true);
+      document.querySelector("#main").append(clone);
+      clone.open = true;
+      clone.append(content);
+      setHeights([
+        `${details.offsetHeight}px`,
+        `${details.offsetHeight + content.offsetHeight}px`,
+      ]);
+      // add back the content
+      details.append(content);
+      clone.remove();
+    }, 100);
   }, [detailsRef, screenWidth, screenHeight]);
   return [min, max];
 };
