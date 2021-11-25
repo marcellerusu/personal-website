@@ -1,5 +1,6 @@
 import styled from "styled-components";
-import Skills from "./Skills";
+import Skills from "./components/Skills";
+import Entry from "./components/Entry";
 
 const Main = styled.div`
   font-size: 20px;
@@ -38,59 +39,6 @@ const Header = styled.div`
   }
 `;
 
-const Details = styled.details`
-  &[open] {
-    background-color: white;
-  }
-  transition: background-color 250ms ease-out 0ms;
-  &:hover {
-    background-color: white;
-  }
-
-  > * {
-    margin: 0 20% 0 20%;
-  }
-  summary {
-    list-style: none;
-    h3 {
-      z-index: 2;
-      font-size: 27px;
-      text-decoration: underline;
-    }
-    &:hover {
-      cursor: pointer;
-    }
-    div {
-      z-index: 2;
-      width: 100%;
-      display: flex;
-      justify-content: space-between;
-    }
-  }
-  /* {children} */
-  > div {
-    font-size: 17px;
-    p {
-      text-decoration: underline dotted;
-    }
-  }
-`;
-
-const Item = ({ title, position, dateRange, children }) => {
-  return (
-    <Details>
-      <summary>
-        <h3>{title}</h3>
-        <div>
-          <em>{position}</em>
-          <em>{dateRange}</em>
-        </div>
-      </summary>
-      <div>{children}</div>
-    </Details>
-  );
-};
-
 function App() {
   const skills = [
     ["JavaScript", "React", "TypeScript", "Node.js", ["Ruby", ["Rails"]]],
@@ -116,7 +64,7 @@ function App() {
         </em>
       </div> */}
       <Skills skills={skills} />
-      <Item
+      <Entry
         title="NoRedInk"
         position="Full-Stack Engineer"
         dateRange="Sept 2021 - Present"
@@ -129,8 +77,8 @@ function App() {
           <li>Wrote & recorded original song for NoRedInk tech podcast :)</li>
         </ul>
         <p>[Elm, Haskell, Rails, MySQL, Nix, Git]</p>
-      </Item>
-      <Item
+      </Entry>
+      <Entry
         title="Vidyard"
         position="Software Developer"
         dateRange="Sept 2020 - August 2021"
@@ -146,8 +94,8 @@ function App() {
           </li>
         </ul>
         <p>[Rails, Vue, React, LaunchDarkly, MySQL, Git]</p>
-      </Item>
-      <Item
+      </Entry>
+      <Entry
         title="BitBakery Software"
         position="Full-Stack Developer"
         dateRange="Jan 2019 - August 2020"
@@ -163,8 +111,8 @@ function App() {
           </li>
         </ul>
         <p>[React, Angular, Vue, MongoDB, MySQL, Ionic, Node.js, Rails, Git]</p>
-      </Item>
-      <Item
+      </Entry>
+      <Entry
         title="MappedIn"
         position="Software Developer (Intern)"
         dateRange="Sept 2018 - Dec 2018"
@@ -177,8 +125,8 @@ function App() {
           <li>Migrated legacy state management to Redux</li>
         </ul>
         <p>[React, Redux, MongoDB, Git, Node.js, Enzyme]</p>
-      </Item>
-      <Item
+      </Entry>
+      <Entry
         title="Alida (FKA Vision Critical)"
         position="Software Developer (Intern)"
         dateRange="May 2017 - Dec 2017"
@@ -194,8 +142,8 @@ function App() {
           </li>
         </ul>
         <p>[C#, React, MS SQL, .NET, Git, NUnit]</p>
-      </Item>
-      <Item
+      </Entry>
+      <Entry
         title="Peacock Programming Language"
         position="Personal Project"
         dateRange="2021"
@@ -211,8 +159,8 @@ function App() {
           </li>
         </ul>
         <p>[Ruby, RSpec, JavaScript]</p>
-      </Item>
-      <Item title="Component TS" position="Personal Project" dateRange="2017">
+      </Entry>
+      <Entry title="Component TS" position="Personal Project" dateRange="2017">
         <ul>
           <li>
             Front-end library influenced by Elm to make functional style web
@@ -225,7 +173,7 @@ function App() {
           </li>
         </ul>
         <p>[TypeScript]</p>
-      </Item>
+      </Entry>
     </Main>
   );
 }
