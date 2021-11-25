@@ -4,7 +4,7 @@ import styled from "styled-components";
 
 const Details = styled.details`
   /* ANIMATION CODE START */
-  transition: height 200ms ease, background-color 250ms ease-out 0ms;
+  transition: height 200ms ease, background-color 300ms ease-out 0ms;
   overflow: hidden;
 
   &:not([open]) {
@@ -82,6 +82,7 @@ const useActualHeight = (detailsRef) => {
       `${details.offsetHeight}px`,
       `${details.offsetHeight + content.offsetHeight}px`,
     ]);
+    // add back the content
     details.append(content);
     clone.remove();
   }, [detailsRef, screenWidth, screenHeight]);

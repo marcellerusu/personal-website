@@ -1,4 +1,5 @@
 import styled from "styled-components";
+import Header from "./components/Header";
 import Skills from "./components/Skills";
 import Entry from "./components/Entry";
 
@@ -33,16 +34,6 @@ const Main = styled.div`
   }
 `;
 
-const Header = styled.div`
-  margin: 25px 20% 0 20%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  hr {
-    width: 100%;
-  }
-`;
-
 function App() {
   const skills = [
     ["JavaScript", "React", "TypeScript", "Node.js", ["Ruby", ["Rails"]]],
@@ -53,11 +44,7 @@ function App() {
   ];
   return (
     <Main id="main">
-      <Header>
-        <h1>Marcelle Rusu</h1>
-        <hr></hr>
-        <h3>Front-end Developer</h3>
-      </Header>
+      <Header />
       {/* <div>
         <Key>
           <h3>Summary</h3>
