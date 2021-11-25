@@ -19,9 +19,9 @@ const Container = styled.div`
 `;
 
 const Header = () => {
-  const [isTop, setTop] = useState(true);
+  const [isTop, setIsTop] = useState(true);
   useLayoutEffect(() => {
-    window.addEventListener("scroll", () => setTop(window.scrollY < 10));
+    window.addEventListener("scroll", () => setIsTop(window.scrollY < 10));
   }, []);
   return (
     <Container isTop={isTop}>
