@@ -93,7 +93,7 @@ const Item = ({ title, position, dateRange, children }) => {
 
 function App() {
   const skills = [
-    ["JavaScript", "React", "TypeScript", "Node.js", "Ruby"],
+    ["JavaScript", "React", "TypeScript", "Node.js", ["Ruby", ["Rails"]]],
     [
       ["SQL", ["MySQL", "PostgreSQL"]],
       ["NoSQL", ["Redis", "Mongo"]],

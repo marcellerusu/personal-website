@@ -39,7 +39,10 @@ const Skill = ({ skill }) => {
   const [parent, skills] = skill;
   return (
     <>
-      <Item name={parent} />(
+      <MarginRight>
+        <Item name={parent} />
+      </MarginRight>
+      (
       {skills.map((skill, i, arr) => (
         <React.Fragment key={skill}>
           <Item name={skill} />
