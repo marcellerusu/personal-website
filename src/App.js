@@ -4,6 +4,10 @@ import Entry from "./components/Entry";
 
 const Main = styled.div`
   font-size: 20px;
+  * {
+    font-weight: 100;
+    text-decoration-thickness: 1px;
+  }
   ul {
     margin: 0;
     list-style: none;
