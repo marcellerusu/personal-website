@@ -91,21 +91,10 @@ const useActualHeight = (detailsRef) => {
 
 const Entry = ({ title, position, dateRange, children }) => {
   const detailsRef = useRef(null);
-  const content = useRef(null);
+
   const [min, max] = useActualHeight(detailsRef);
   return (
-    <Details
-      onToggle={() =>
-        detailsRef.current.open === true &&
-        detailsRef.current.scrollIntoView({
-          behavior: "smooth",
-          block: "start",
-        })
-      }
-      ref={detailsRef}
-      min={min}
-      max={max}
-    >
+    <Details ref={detailsRef} min={min} max={max}>
       <summary>
         <h3>{title}</h3>
         <div>
@@ -113,7 +102,7 @@ const Entry = ({ title, position, dateRange, children }) => {
           <em>{dateRange}</em>
         </div>
       </summary>
-      <div ref={content}>{children}</div>
+      <div>{children}</div>
     </Details>
   );
 };
