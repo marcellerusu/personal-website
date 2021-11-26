@@ -62,6 +62,7 @@ function App() {
         title="NoRedInk"
         position="Full-Stack Engineer"
         dateRange="Sept 2021 - Present"
+        skills={["Elm", "Haskell", "Rails", "MySQL", "Nix", "Git"]}
       >
         <ul>
           <li>
@@ -69,12 +70,12 @@ function App() {
             that was developed from start to pilot in 2 months
           </li>
         </ul>
-        <p>[Elm, Haskell, Rails, MySQL, Nix, Git]</p>
       </Entry>
       <Entry
         title="Vidyard"
         position="Software Developer"
         dateRange="Sept 2020 - August 2021"
+        skills={["Rails", "Vue", "React", "LaunchDarkly", "MySQL", "Git"]}
       >
         <ul>
           <li>
@@ -86,12 +87,22 @@ function App() {
             send videos from within the native LinkedIn chat UI
           </li>
         </ul>
-        <p>[Rails, Vue, React, LaunchDarkly, MySQL, Git]</p>
       </Entry>
       <Entry
         title="BitBakery Software"
         position="Full-Stack Developer"
         dateRange="Jan 2019 - August 2020"
+        skills={[
+          "React",
+          "Angular",
+          "Vue",
+          "MongoDB",
+          "MySQL",
+          "Ionic",
+          "Node.js",
+          "Rails",
+          "Git",
+        ]}
       >
         <ul>
           <li>
@@ -103,12 +114,12 @@ function App() {
             written in Jade/Pug to React
           </li>
         </ul>
-        <p>[React, Angular, Vue, MongoDB, MySQL, Ionic, Node.js, Rails, Git]</p>
       </Entry>
       <Entry
         title="MappedIn"
         position="Software Developer (Intern)"
         dateRange="Sept 2018 - Dec 2018"
+        skills={["React", "Redux", "MongoDB", "Git", "Node.js", "Enzyme"]}
       >
         <ul>
           <li>
@@ -117,12 +128,12 @@ function App() {
           </li>
           <li>Migrated legacy state management to Redux</li>
         </ul>
-        <p>[React, Redux, MongoDB, Git, Node.js, Enzyme]</p>
       </Entry>
       <Entry
         title="Alida (FKA Vision Critical)"
         position="Software Developer (Intern)"
         dateRange="May 2017 - Dec 2017"
+        skills={["C#", "React", "MS SQL", ".NET", "Git", "NUnit"]}
       >
         <ul>
           <li>
@@ -134,12 +145,12 @@ function App() {
             the acquired company (Pressly)
           </li>
         </ul>
-        <p>[C#, React, MS SQL, .NET, Git, NUnit]</p>
       </Entry>
       <Entry
         title="Peacock Programming Language"
         position="Personal Project"
         dateRange="2021"
+        skills={["Ruby", "RSpec", "JavaScript"]}
       >
         <ul>
           <li>
@@ -151,9 +162,13 @@ function App() {
             Ruby & ML
           </li>
         </ul>
-        <p>[Ruby, RSpec, JavaScript]</p>
       </Entry>
-      <Entry title="Component TS" position="Personal Project" dateRange="2017">
+      <Entry
+        title="Component TS"
+        position="Personal Project"
+        dateRange="2017"
+        skills={["TypeScript"]}
+      >
         <ul>
           <li>
             Front-end library influenced by Elm to make functional style web
@@ -165,7 +180,6 @@ function App() {
             architecture)
           </li>
         </ul>
-        <p>[TypeScript]</p>
       </Entry>
     </Main>
   );
