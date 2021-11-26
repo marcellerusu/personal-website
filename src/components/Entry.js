@@ -13,7 +13,7 @@ const Skills = styled.div`
 const Entry = ({ title, position, dateRange, children, skills = [] }) => {
   const { selected } = useContext(SkillStore);
   return (
-    <Details open={skills.includes(selected)}>
+    <Details open={skills.some((skill) => compareSkills(selected, skill))}>
       <summary>
         <h3>{title}</h3>
         <div>
@@ -26,12 +26,12 @@ const Entry = ({ title, position, dateRange, children, skills = [] }) => {
         <Skills>
           [
           {skills.map((skill, i, arr) => (
-            <>
+            <React.Fragment key={skill}>
               <Highlight active={compareSkills(selected, skill)}>
                 {skill}
               </Highlight>
               <Comma cond={i < arr.length - 1} />
-            </>
+            </React.Fragment>
           ))}
           ]
         </Skills>

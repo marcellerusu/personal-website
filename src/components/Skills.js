@@ -15,6 +15,7 @@ const Clickable = styled.a`
 
 const Row = styled.div`
   display: flex;
+  justify-content: center;
   margin: 0;
   padding: 0;
   font-size: 20px;
@@ -53,23 +54,28 @@ const Skill = ({ skill }) => {
         <Item name={parent} />
       </MarginRight>
       (
-      {skills.map((skill, i, arr) => (
-        <React.Fragment key={skill}>
-          <Item name={skill} />
-          <Comma cond={i !== arr.length - 1} />
-        </React.Fragment>
-      ))}
+      {skills
+        .filter(({ hidden }) => !hidden)
+        .map(({ skill }, i, arr) => (
+          <React.Fragment key={skill}>
+            <Item name={skill} />
+            <Comma cond={i !== arr.length - 1} />
+          </React.Fragment>
+        ))}
       )
     </>
   );
 };
 
+const TrailingComma = ({ cond }) => cond && <>,</>;
+
 const SkillRow = ({ skills, trailingComma = false }) => (
   <Row>
-    {skills.map((skill, i, arr) => (
+    {Object.entries(skills).map((skill, i, arr) => (
       <React.Fragment key={skill}>
         <Skill skill={skill} />
-        <Comma cond={trailingComma || i !== arr.length - 1} />
+        <TrailingComma cond={trailingComma && i === arr.length - 1} />
+        <Comma cond={i !== arr.length - 1} />
       </React.Fragment>
     ))}
   </Row>
