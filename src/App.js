@@ -36,7 +36,10 @@ const Main = styled.div`
 
 function App() {
   const skills = [
-    ["JavaScript", "React", "TypeScript", "Node.js", ["Ruby", ["Rails"]]],
+    [
+      ["JavaScript", ["React", "TypeScript", "Node.js"]],
+      ["Ruby", ["Rails"]],
+    ],
     [
       ["SQL", ["MySQL", "PostgreSQL"]],
       ["NoSQL", ["Redis", "Mongo"]],
@@ -65,7 +68,6 @@ function App() {
             Worked on a tightly-coupled 3rd party integration with Schoology
             that was developed from start to pilot in 2 months
           </li>
-          <li>Wrote & recorded original song for NoRedInk tech podcast :)</li>
         </ul>
         <p>[Elm, Haskell, Rails, MySQL, Nix, Git]</p>
       </Entry>

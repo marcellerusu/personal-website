@@ -2,7 +2,8 @@ import { useLayoutEffect, useState } from "react";
 import styled from "styled-components";
 
 const Container = styled.div`
-  transition: margin 200ms ease, background-color 300ms ease-out 0ms;
+  transition: margin 200ms ease-in-out, padding 200ms ease-in-out,
+    background-color 300ms ease-in-out 0ms;
 
   margin: ${({ isTop }) => (isTop ? "25px 20% 0 20%" : "0")};
   padding-top: ${({ isTop }) => (isTop ? "0" : "25px")};
