@@ -14,7 +14,7 @@ const Main = styled.div`
   }
   ul {
     margin: 0;
-    list-style: none;
+    list-style: url("/slash-solid.svg");
   }
 
   hr {
