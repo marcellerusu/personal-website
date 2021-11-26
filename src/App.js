@@ -39,16 +39,6 @@ const Main = styled.div`
 
 function App() {
   const [selectedSkill, setSelectedSkill] = useState(null);
-  const skills = [
-    [
-      ["JavaScript", ["React", "TypeScript", "Node.js"]],
-      ["Ruby", ["Rails"]],
-    ],
-    [
-      ["SQL", ["MySQL", "PostgreSQL"]],
-      ["NoSQL", ["Redis", "Mongo"]],
-    ],
-  ];
   return (
     <SkillStore.Provider
       value={{ selected: selectedSkill, setSelected: setSelectedSkill }}
@@ -64,7 +54,7 @@ function App() {
             about front-end, music & language design.
           </em>
         </div> */}
-        <Skills skills={skills} />
+        <Skills />
         <Entry
           title="NoRedInk"
           position="Full-Stack Engineer"

@@ -1,7 +1,7 @@
 import React, { useContext } from "react";
 import styled from "styled-components";
 import Details, { Content } from "./ui/Details";
-import SkillStore from "../store/skill";
+import SkillStore, { compare as compareSkills } from "../store/skill";
 import Highlight from "./ui/Highlight";
 import Comma from "./ui/Comma";
 
@@ -27,7 +27,9 @@ const Entry = ({ title, position, dateRange, children, skills = [] }) => {
           [
           {skills.map((skill, i, arr) => (
             <>
-              <Highlight active={selected === skill}>{skill}</Highlight>
+              <Highlight active={compareSkills(selected, skill)}>
+                {skill}
+              </Highlight>
               <Comma cond={i < arr.length - 1} />
             </>
           ))}

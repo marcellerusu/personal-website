@@ -1,2 +1,4 @@
 import MarginRight from "./MarginRight";
-export default ({ cond }) => cond && <MarginRight>,</MarginRight>;
+const Comma = ({ cond }) => cond && <MarginRight>,</MarginRight>;
+
+export default Comma;

@@ -4,6 +4,7 @@ import SkillStore from "../store/skill";
 import Highlight from "./ui/Highlight";
 import MarginRight from "./ui/MarginRight";
 import Comma from "./ui/Comma";
+import { SKILLS } from "../store/skill";
 
 const Clickable = styled.a`
   color: unset;
@@ -74,7 +75,9 @@ const SkillRow = ({ skills, trailingComma = false }) => (
   </Row>
 );
 
-const Skills = ({ skills: [firstRow, secondRow] }) => (
+const [firstRow, secondRow] = SKILLS;
+
+const Skills = () => (
   <Container>
     <div>
       <SkillRow skills={firstRow} trailingComma={true} />
