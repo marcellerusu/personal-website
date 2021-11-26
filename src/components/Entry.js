@@ -1,6 +1,9 @@
-import React from "react";
+import React, { useContext } from "react";
 import styled from "styled-components";
 import Details, { Content } from "./ui/Details";
+import SkillStore from "../store/skill";
+import Highlight from "./ui/Highlight";
+import Comma from "./ui/Comma";
 
 const Skills = styled.div`
   text-decoration: underline dotted;
@@ -8,8 +11,9 @@ const Skills = styled.div`
 `;
 
 const Entry = ({ title, position, dateRange, children, skills = [] }) => {
+  const { selected } = useContext(SkillStore);
   return (
-    <Details>
+    <Details open={skills.includes(selected)}>
       <summary>
         <h3>{title}</h3>
         <div>
@@ -19,7 +23,16 @@ const Entry = ({ title, position, dateRange, children, skills = [] }) => {
       </summary>
       <Content>
         {children}
-        <Skills>[{skills.map((skill) => skill).join(", ")}]</Skills>
+        <Skills>
+          [
+          {skills.map((skill, i, arr) => (
+            <>
+              <Highlight active={selected === skill}>{skill}</Highlight>
+              <Comma cond={i < arr.length - 1} />
+            </>
+          ))}
+          ]
+        </Skills>
       </Content>
     </Details>
   );

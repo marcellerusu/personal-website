@@ -1,11 +1,9 @@
-import React from "react";
+import React, { useContext } from "react";
 import styled from "styled-components";
-
-const MarginRight = styled.div`
-  margin-right: 5px;
-`;
-
-const Comma = ({ cond }) => cond && <MarginRight>,</MarginRight>;
+import SkillStore from "../store/skill";
+import Highlight from "./ui/Highlight";
+import MarginRight from "./ui/MarginRight";
+import Comma from "./ui/Comma";
 
 const Clickable = styled.a`
   color: unset;
@@ -28,11 +26,22 @@ const Container = styled.div`
   margin-bottom: 20px;
 `;
 
-const Item = ({ name }) => (
-  <Clickable href="#" onClick={(e) => e.preventDefault()}>
-    {name}
-  </Clickable>
-);
+const Item = ({ name }) => {
+  const { selected, setSelected } = useContext(SkillStore);
+  const onClick = (e) => {
+    e.preventDefault();
+    if (selected === name) {
+      setSelected(null);
+    } else {
+      setSelected(name);
+    }
+  };
+  return (
+    <Clickable href="#" onClick={onClick}>
+      <Highlight active={selected === name}>{name}</Highlight>
+    </Clickable>
+  );
+};
 
 const Skill = ({ skill }) => {
   if (typeof skill === "string") return <Item name={skill} />;
