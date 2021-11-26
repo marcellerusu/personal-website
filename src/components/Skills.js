@@ -5,6 +5,7 @@ import Highlight from "./ui/Highlight";
 import MarginRight from "./ui/MarginRight";
 import Comma from "./ui/Comma";
 import { SKILLS } from "../store/skill";
+import { mapSkills } from "../responsive";
 
 const Clickable = styled.a`
   color: unset;
@@ -18,7 +19,9 @@ const Row = styled.div`
   justify-content: center;
   margin: 0;
   padding: 0;
-  font-size: 20px;
+  @media (max-width: 600px) {
+    font-size: 17px;
+  }
 `;
 
 const Container = styled.div`
@@ -81,15 +84,21 @@ const SkillRow = ({ skills, trailingComma = false }) => (
   </Row>
 );
 
-const [firstRow, secondRow] = SKILLS;
-
-const Skills = () => (
-  <Container>
-    <div>
-      <SkillRow skills={firstRow} trailingComma={true} />
-      <SkillRow skills={secondRow} />
-    </div>
-  </Container>
-);
+const Skills = () => {
+  const skills = mapSkills(SKILLS);
+  return (
+    <Container>
+      <div>
+        {skills.map((row, i) => (
+          <SkillRow
+            key={`skill-${i}`}
+            skills={row}
+            trailingComma={i < skills.length - 1}
+          />
+        ))}
+      </div>
+    </Container>
+  );
+};
 
 export default Skills;

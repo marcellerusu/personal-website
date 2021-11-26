@@ -6,6 +6,9 @@ const Container = styled.div`
     background-color 300ms ease-in-out 0ms;
 
   margin: ${({ isTop }) => (isTop ? "25px 20% 0 20%" : "0")};
+  @media (max-width: 600px) {
+    margin: ${({ isTop }) => (isTop ? "25px 0 0 0" : "0")};
+  }
   padding-top: ${({ isTop }) => (isTop ? "0" : "25px")};
   position: sticky;
   background-color: ${({ isTop }) => (isTop ? "unset" : "#000000b5")};
@@ -16,6 +19,12 @@ const Container = styled.div`
   align-items: center;
   hr {
     width: 100%;
+  }
+  /* Mobile */
+  h1 {
+    text-align: center;
+    line-height: 1em;
+    padding-bottom: 0.25em;
   }
 `;
 

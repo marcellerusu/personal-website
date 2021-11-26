@@ -39,8 +39,15 @@ export const Details = styled.details`
 
   > * {
     margin: 0 20% 0 20%;
+    @media (max-width: 600px) {
+      margin: 0 5% 0 5%;
+    }
   }
+
   summary {
+    @media (max-width: 600px) {
+      font-size: 16px;
+    }
     list-style: none;
     h3 {
       z-index: 2;

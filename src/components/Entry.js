@@ -4,13 +4,18 @@ import Details, { Content } from "./ui/Details";
 import SkillStore, { compare as compareSkills } from "../store/skill";
 import Highlight from "./ui/Highlight";
 import Comma from "./ui/Comma";
+import { mapTitle } from "../responsive";
 
 const Skills = styled.div`
+  @media (max-width: 600px) {
+    font-size: 15px;
+  }
   text-decoration: underline dotted;
   text-decoration-thickness: 1px;
 `;
 
 const Entry = ({ title, position, dateRange, children, skills = [] }) => {
+  title = mapTitle(title);
   const { selected } = useContext(SkillStore);
   return (
     <Details open={skills.some((skill) => compareSkills(selected, skill))}>

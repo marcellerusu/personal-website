@@ -91,11 +91,9 @@ function App() {
           dateRange="Jan 2019 - August 2020"
           skills={[
             "React",
-            "Angular",
             "Vue",
             "MongoDB",
             "MySQL",
-            "Ionic",
             "Node.js",
             "Rails",
             "Git",

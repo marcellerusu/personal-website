@@ -44,7 +44,6 @@ export const compare = (skillA, skillB) => {
     FLAT_SKILLS[skillA]?.includes(skillB) ||
     FLAT_SKILLS[skillB]?.includes(skillA)
   ) {
-    console.log(skillA, skillB);
     return true;
   }
   return false;
