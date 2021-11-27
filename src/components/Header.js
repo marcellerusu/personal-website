@@ -16,6 +16,7 @@ const Container = styled.div`
   top: 0px;
   display: flex;
   flex-direction: column;
+  z-index: 20;
   align-items: center;
   hr {
     width: 100%;
@@ -28,6 +29,27 @@ const Container = styled.div`
   }
 `;
 
+const ViewSource = styled.a`
+  position: absolute;
+  right: 0;
+  font-size: 17px;
+  font-style: italic;
+  :visited {
+    color: unset;
+  }
+`;
+
+const SvgLing = styled.img`
+  position: absolute;
+  right: ${({ position }) => position * 25}px;
+  bottom: 7.5px;
+  width: 20px;
+  cursor: pointer;
+  &:hover {
+    opacity: 0.7;
+  }
+`;
+
 const Header = () => {
   const [isTop, setIsTop] = useState(true);
   useLayoutEffect(() => {
@@ -36,6 +58,30 @@ const Header = () => {
   return (
     <Container isTop={isTop}>
       <h1>Marcelle Rusu</h1>
+      <ViewSource
+        href="https://github.com/marcellerusu/marcellerusu"
+        target="_blank"
+      >
+        view source
+      </ViewSource>
+      <a
+        href="https://www.linkedin.com/in/marcelrusu/"
+        target="_blank"
+        alt="Link to LinkedIn"
+      >
+        <SvgLing src="/linkedin-brands.svg" position={0} />
+      </a>
+      <a
+        href="https://www.github.com/marcellerusu"
+        target="_blank"
+        alt="Link to Github"
+      >
+        <SvgLing src="/github-brands.svg" position={1} />
+      </a>
+      <a href="mailto:marcelrusu@protonmail.com" alt="Link to Email">
+        <SvgLing src="/envelope-solid.svg" position={2} />
+      </a>
+
       <hr></hr>
       <h3>Front-end Developer</h3>
     </Container>
