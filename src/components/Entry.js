@@ -4,7 +4,7 @@ import Details, { Content } from "./ui/Details";
 import SkillStore, { compare as compareSkills } from "../store/skill";
 import Highlight from "./ui/Highlight";
 import Comma from "./ui/Comma";
-import { mapTitle } from "../responsive";
+import { mapTitle } from "../misc/responsive";
 
 const Skills = styled.div`
   @media (max-width: 600px) {

@@ -5,7 +5,7 @@ import Highlight from "./ui/Highlight";
 import MarginRight from "./ui/MarginRight";
 import Comma from "./ui/Comma";
 import { SKILLS } from "../store/skill";
-import { mapSkills } from "../responsive";
+import { mapSkills } from "../misc/responsive";
 
 const Clickable = styled.a`
   color: unset;
