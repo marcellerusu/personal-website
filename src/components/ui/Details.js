@@ -115,10 +115,10 @@ export const useActualHeights = () => {
   return [detailsRef, min, max];
 };
 
-const DetailsComponent = ({ children, open }) => {
+const DetailsComponent = ({ children, open, ...props }) => {
   const [ref, min, max] = useActualHeights();
   return (
-    <Details ref={ref} min={min} max={max} open={open}>
+    <Details ref={ref} min={min} max={max} open={open} {...props}>
       {children}
     </Details>
   );

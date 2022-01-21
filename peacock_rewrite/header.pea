@@ -1,0 +1,26 @@
+export class Header < Element =
+  style = "
+    transition: margin 200ms ease-in-out, padding 200ms ease-in-out, background-color 300ms ease-in-out 0ms;
+    margin: 25px 20% 0 20%;
+    padding-top: 0;
+    position: sticky;
+    top: 0px;
+    display: flex;
+    flex-direction: column;
+    z-index: 20;
+    align-items: center;
+    hr {
+      width: 100%;
+    }
+    h1 {
+      text-align: center;
+      line-height: 1em;
+      padding-bottom: 0.25em;
+    }
+  "
+  view =
+    <div>
+      <h1>Marcelle Rusu</h1>
+      <hr></hr>
+      <h2>{"Front-end"} Developer</h2>
+    </div>

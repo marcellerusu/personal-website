@@ -1,0 +1,89 @@
+import { Highlight } from "./misc"
+
+class Item < Element =
+  context = props[:skill_context]
+  margin_right is_margin =
+    if is_margin
+      "5px"
+    else
+      ""
+    end
+  style props = "
+    margin-right: #{margin_right props[:margin]};
+    color: unset;
+    a {
+      &:active {
+        color: gray;
+      }
+    }
+  "
+  comma cond =
+    if cond
+      ","
+    else
+      nil
+    end
+  set_active_skill =
+    if context.value == props[:name]
+      set_context nil
+    else
+      set_context props[:name]
+    end
+  view props _ selected_skill =
+    <span>
+      <a onclick=#{set_active_skill}>
+        <Highlight active={props[:name] == selected_skill}>
+          {props[:name]}
+        </Highlight>
+      </a>
+      {comma props[:comma]}
+    </span>
+
+class Skill < Element =
+  style = "
+    margin-right: 5px;
+    div {
+      display: inline;
+    }
+  "
+  view props =
+    <div>
+      <Item name={props[:parent]} margin skill_context={props[:skill_context]} />
+      {"("}
+      {props[:sub_skills].map fn name i l =>
+        <div>
+          <Item
+            name={name}
+            comma={i < l.last_index}
+            margin={i < l.last_index}
+          />
+        </div>
+      end}
+      {")"}
+    </div>
+
+class SkillRow < Element =
+  style = "
+    display: flex;
+    justify-content: center;
+    margin: 0;
+    padding: 0;
+  "
+  view props =
+    <div>
+      {props[:skills].map #{ <Skill parent={%[:parent]} sub_skills={%[:sub_skills]} skill_context={props[:skill_context]} /> }}
+    </div>
+
+export class Skills < Element =
+  style = "
+    margin: 10px 20% 0 20%;
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+  "
+  view props =
+    <div>
+      <div>
+        {props[:skills].map #{<SkillRow skills={%} skill_context={props[:skill_context]} />}}
+      </div>
+    </div>

@@ -1,0 +1,1907 @@
+  <html>
+    <head>
+      <title>Marcelle Rusu</title>
+      <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+      <meta content="utf-8" http-equiv="encoding">
+      <link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+Antique:wght@300&amp;display=swap" rel="stylesheet">
+    </head>
+    <body style="margin: 0">
+      <div id="main"></div>
+    </body>
+    <script>const __Symbols = {}
+class MatchError extends Error {}
+
+const allEntries = (obj) =>
+  Reflect.ownKeys(obj).map((k) => [Sym.new(k), obj[k]]);
+
+class Schema {
+  nil_q() {
+    return new Bool(false);
+  }
+  static for(schema) {
+    if (schema instanceof Schema) return schema;
+    if (schema instanceof List) return new ListSchema(schema);
+    if (schema instanceof Array) return new ListSchema(schema);
+    if (schema instanceof Function) return new FnSchema(schema);
+    if (schema instanceof Record) return new RecordSchema(schema);
+    if (schema === undefined) return new AnySchema();
+    // TODO: this should be more specific, why?
+    const literals = [Bool, Int, Float, Str, Sym];
+    if (literals.includes(schema.constructor)) return new LiteralSchema(schema);
+    if (typeof schema === "object") return new RecordSchema(schema);
+  }
+
+  static case(value, cases) {
+    const fn = cases.first((list) => {
+      const schema = list.__lookup__(new Int(0));
+      const fn = list.__lookup__(new Int(1));
+      if (schema.valid_q(value).to_js()) {
+        return fn;
+      }
+    });
+    if (!fn) throw new MatchError();
+    return fn(value);
+  }
+
+  static or(...schema) {
+    return new OrSchema(...schema);
+  }
+
+  static and(a, b) {
+    [a, b] = [Schema.for(a), Schema.for(b)];
+    if (a instanceof RecordSchema && b instanceof RecordSchema) {
+      return a.combine(b);
+    }
+    return new AndSchema(a, b);
+  }
+
+  static any(name) {
+    return new AnySchema(name.to_js());
+  }
+
+  static literal(value) {
+    return new LiteralSchema(value);
+  }
+
+  constructor(schema) {
+    this.schema_ = schema;
+  }
+
+  valid_q(other) {
+    throw null;
+  }
+
+  valid_b(other) {
+    if (!this.valid_q(other).to_js()) {
+      throw new MatchError();
+    }
+    return other;
+  }
+}
+
+class OrSchema extends Schema {
+  constructor(...schema) {
+    super(schema.map(Schema.for));
+  }
+  valid_q(other) {
+    return Bool.new(this.schema_.some((s) => s.valid_q(other).to_js()));
+  }
+}
+
+class AndSchema extends Schema {
+  constructor(...schema) {
+    super(schema.map(Schema.for));
+  }
+  valid_q(other) {
+    return Bool.new(this.schema_.every((s) => s.valid_q(other).to_js()));
+  }
+}
+
+class RecordSchema extends Schema {
+  constructor(schema) {
+    schema = schema.map((k, v) => {
+      return List.new([k, Schema.for(v)]);
+    });
+    super(schema);
+  }
+
+  combine(other) {
+    if (!(other instanceof RecordSchema)) throw new NotReached();
+    let newSchema = this.schema_.combine(other.schema_);
+    return new RecordSchema(newSchema);
+  }
+
+  valid_q(other) {
+    return this.schema_.every((k, v) =>
+      Bool.new(other.has_q(k).to_js() && v.valid_q(other.__lookup__(k)).to_js())
+    );
+  }
+}
+
+class ListSchema extends Schema {
+  constructor(value) {
+    if (value instanceof Array) {
+      value = List.new(value);
+    }
+    value = value.map(Schema.for);
+    super(value);
+  }
+  valid_q(other) {
+    if (!(other instanceof List)) return new Bool(false);
+    const otherSize = other.size().to_js();
+    return new Bool(
+      otherSize === this.schema_.size().to_js() &&
+        this.schema_.every((s, i) => s.valid_q(other.__lookup__(i))).to_js()
+    );
+  }
+  // _find_bound_variables(paths = []) {
+  //   // for (let )
+  // }
+  // _eval_path_on(path, list) {
+  //   let value = list;
+  //   for (let key of path) {
+  //     value = value.__lookup__(key);
+  //   }
+  //   return value;
+  // }
+}
+
+class FnSchema extends Schema {
+  valid_q(other) {
+    return this.schema_(other);
+  }
+}
+
+class AnySchema extends Schema {
+  valid_q(other) {
+    return Bool.new(true);
+  }
+}
+
+class LiteralSchema extends Schema {
+  valid_q(other) {
+    return this.schema_.__eq__(other);
+  }
+}
+
+class NotReached extends Error {
+  constructor(...artifacts) {
+    console.log(...artifacts);
+    super();
+  }
+}
+
+class StringScanner {
+  index = 0;
+  matched = null;
+  groups = [];
+  constructor(str) {
+    this.str = str;
+  }
+
+  scan(regex) {
+    const result = this.rest_of_str().match(regex);
+    if (result === null || result.index !== 0) return false;
+    const [matched, ...groups] = Array.from(result);
+    this.index += matched.length;
+    this.matched = matched;
+    this.groups = groups;
+    return true;
+  }
+
+  rest_of_str() {
+    return this.str.slice(this.index);
+  }
+
+  is_end_of_str() {
+    return this.index >= this.str.length;
+  }
+}
+
+class Token {
+  constructor(value) {
+    this.value = value;
+  }
+  is(TokenType) {
+    return this instanceof TokenType;
+  }
+}
+class ValueToken extends Token {}
+class IdentifierToken extends Token {}
+class OpenBrace extends Token {}
+class CloseBrace extends Token {}
+class Ampersand extends Token {}
+class PseudoClass extends Token {}
+
+const tokenize = (str) => {
+  const tokens = [];
+  const scanner = new StringScanner(str);
+  while (!scanner.is_end_of_str()) {
+    if (scanner.scan(/\s+/)) {
+      continue;
+    } else if (scanner.scan(/&/)) {
+      tokens.push(new Ampersand());
+    } else if (scanner.scan(/:([a-z]+)/)) {
+      tokens.push(new PseudoClass(scanner.groups[0]));
+    } else if (scanner.scan(/:(\s)*(.*);/)) {
+      tokens.push(new ValueToken(scanner.groups[1]));
+    } else if (scanner.scan(/([a-z][a-z1-9\-]*|\*)/)) {
+      tokens.push(new IdentifierToken(scanner.matched));
+    } else if (scanner.scan(/\{/)) {
+      tokens.push(new OpenBrace());
+    } else if (scanner.scan(/\}/)) {
+      tokens.push(new CloseBrace());
+    } else {
+      throw new NotReached([scanner.index, scanner.rest_of_str()]);
+    }
+  }
+  return tokens;
+};
+
+class TokenMismatch extends Error {
+  constructor(expected, got) {
+    super(`expected - ${expected.name}, got - ${got.constructor.name}`);
+  }
+}
+
+class AstNode {}
+class RuleNode extends AstNode {
+  constructor(name, value) {
+    super();
+    this.name = name;
+    this.value = value;
+  }
+}
+class ChildSelectorNode extends AstNode {
+  constructor(tag_name, rules) {
+    super();
+    this.tag_name = tag_name;
+    this.rules = rules;
+  }
+}
+
+class PseudoSelectorNode extends AstNode {
+  constructor(selector, rules) {
+    super();
+    this.selector = selector;
+    this.rules = rules;
+  }
+}
+
+class Parser {
+  constructor(tokens, index = 0, end_token = null) {
+    this.tokens = tokens;
+    this.index = index;
+    this.end_token = end_token;
+  }
+
+  get current() {
+    return this.tokens[this.index];
+  }
+
+  get peek() {
+    return this.tokens[this.index + 1];
+  }
+
+  clone(end_token = null) {
+    return new Parser(this.tokens, this.index, end_token || this.end_token);
+  }
+
+  consume_clone(parser) {
+    this.index = parser.index;
+  }
+
+  consume(TokenClass) {
+    if (!(this.current instanceof TokenClass))
+      throw new TokenMismatch(TokenClass, this.current);
+    const token = this.current;
+    this.index += 1;
+    return token;
+  }
+
+  can_parse() {
+    if (this.index >= this.tokens.length) return false;
+    if (!this.end_token) return true;
+    return !this.current.is(this.end_token);
+  }
+
+  parse() {
+    const ast = [];
+    while (this.can_parse()) {
+      if (this.current.is(Ampersand) && this.peek?.is(PseudoClass)) {
+        ast.push(this.parse_child_pseudo_selector());
+      } else if (this.current.is(IdentifierToken) && this.peek?.is(OpenBrace)) {
+        ast.push(this.parse_child_selector());
+      } else if (this.current.is(IdentifierToken)) {
+        ast.push(this.parse_rule());
+      } else {
+        throw new NotReached(this.current);
+      }
+    }
+    return ast;
+  }
+
+  parse_child_pseudo_selector() {
+    this.consume(Ampersand);
+    const { value: selector } = this.consume(PseudoClass);
+    this.consume(OpenBrace);
+    const cloned_parser = this.clone(CloseBrace);
+    const rules = cloned_parser.parse();
+    this.consume_clone(cloned_parser);
+    this.consume(CloseBrace);
+    return new PseudoSelectorNode(selector, rules);
+  }
+
+  parse_child_selector() {
+    const { value: tag_name } = this.consume(IdentifierToken);
+    this.consume(OpenBrace);
+    const cloned_parser = this.clone(CloseBrace);
+    const rules = cloned_parser.parse();
+    this.consume_clone(cloned_parser);
+    this.consume(CloseBrace);
+    return new ChildSelectorNode(tag_name, rules);
+  }
+
+  parse_rule() {
+    const { value: name } = this.consume(IdentifierToken);
+    const { value } = this.consume(ValueToken);
+    return new RuleNode(name, value);
+  }
+}
+
+class Compiler {
+  constructor(ast, tag_names = [], top_level = true) {
+    this.ast = ast;
+    this.tag_names = tag_names;
+    this.top_level = top_level;
+  }
+
+  base_rules_start() {
+    if (this.top_level) {
+      if (this.tag_names.length !== 1) throw new NotReached();
+      return `${this.tag_names[0]} {\n`;
+    } else {
+      return "";
+    }
+  }
+
+  base_rules_end() {
+    if (this.top_level) {
+      return "}\n";
+    } else {
+      return "";
+    }
+  }
+
+  eval() {
+    const [rules, sub_rules] = this.eval_rules_and_sub_rules();
+    return [rules, ...sub_rules];
+  }
+
+  eval_rules_and_sub_rules() {
+    let rules = this.base_rules_start();
+    const rule_nodes = this.ast.filter((node) => node instanceof RuleNode);
+    for (let node of rule_nodes) {
+      rules += "  " + this.eval_rule(node) + "\n";
+    }
+    rules += this.base_rules_end();
+
+    let sub_rules = [];
+    const sub_rule_nodes = this.ast.filter(
+      (node) => !rule_nodes.includes(node)
+    );
+    for (let node of sub_rule_nodes) {
+      switch (node.constructor) {
+        case PseudoSelectorNode:
+          sub_rules = sub_rules.concat(this.eval_pseudo_selector(node));
+        case ChildSelectorNode:
+          sub_rules = sub_rules.concat(this.eval_child_selector(node));
+          break;
+        default:
+          throw new NotReached();
+      }
+    }
+    return [rules, sub_rules];
+  }
+
+  eval_rule({ name, value }) {
+    return `${name}: ${value};`;
+  }
+
+  eval_pseudo_selector({ selector, rules: ast }) {
+    if (!selector) throw new NotReached();
+    let output = `${this.tag_names.join(" ")}:${selector} {\n`;
+    const [rules, sub_rules] = new Compiler(
+      ast,
+      [...this.tag_names, selector],
+      false
+    ).eval_rules_and_sub_rules();
+    output += rules;
+    output += "}\n";
+
+    return [output, ...sub_rules];
+  }
+
+  eval_child_selector({ tag_name, rules: ast }) {
+    let output = `${this.tag_names.join(" ")} ${tag_name} {\n`;
+    const [rules, sub_rules] = new Compiler(
+      ast,
+      [...this.tag_names, tag_name],
+      false
+    ).eval_rules_and_sub_rules();
+    output += rules;
+    output += "}\n";
+
+    return [output, ...sub_rules];
+  }
+}
+
+const compile_css = (style, tag_name) => {
+  const tokens = tokenize(style);
+  const ast = new Parser(tokens).parse();
+  return new Compiler(ast, [tag_name]).eval();
+};
+
+class TypeMismatchError extends Error {}
+
+// for classes to behave properly
+Object.prototype.to_ps = function () {
+  return Str.new(this.name);
+};
+Object.prototype.nil_q = function () {
+  assert(this.constructor !== Nil);
+  return Bool.new(false);
+};
+const assert = (bool) => {
+  if (!bool) throw new NotReached();
+};
+
+const assertType = (val, type) => {
+  if (typeof val !== type && val.constructor !== type)
+    throw new TypeMismatchError();
+};
+
+class Value {
+  constructor(value) {
+    this.__value = value;
+  }
+  static ["new"](value) {
+    return new this(value);
+  }
+  to_js() {
+    return this.__value;
+  }
+  to_s() {
+    return new Str(this.to_js().toString());
+  }
+  bang() {
+    if (this.to_b().to_js()) {
+      return new Bool(false);
+    } else {
+      return new Bool(true);
+    }
+  }
+  nil_q() {
+    return new Bool(false);
+  }
+  is_a_q(constructor) {
+    return new Bool(this.constructor === constructor);
+  }
+  __eq__(other) {
+    try {
+      this.__check_type(other);
+      return new Bool(this.to_js() === other.to_js());
+    } catch (e) {
+      return new Bool(false);
+    }
+  }
+  __not_eq__(other) {
+    try {
+      this.__check_type(other);
+      return new Bool(this.to_js() !== other.to_js());
+    } catch (e) {
+      return new Bool(false);
+    }
+  }
+  __or__(other) {
+    if (this.to_b().to_js()) {
+      return this;
+    } else {
+      return other;
+    }
+  }
+  __and__(other) {
+    if (this.to_b().to_js() && other.to_b().to_js()) {
+      return other;
+    } else {
+      return this;
+    }
+  }
+
+  to_b() {
+    return new Bool(!(this instanceof Nil));
+  }
+  __check_type(other, type = undefined) {
+    if (!(other instanceof (type || this.constructor)))
+      throw new TypeMismatchError();
+  }
+}
+
+class Bool extends Value {
+  to_ps() {
+    return new Str(this.to_js().toString().yellow);
+  }
+  constructor(value) {
+    assertType(value, Boolean);
+    super(value);
+  }
+  to_b() {
+    return this;
+  }
+  __eq__(other) {
+    return new Bool(this.to_js() === other.to_js());
+  }
+}
+
+class Int extends Value {
+  to_ps() {
+    return new Str(this.to_js().toString().yellow);
+  }
+  __gt__(other) {
+    this.__check_type(other);
+    return new Bool(this.to_js() > other.to_js());
+  }
+  __lt__(other) {
+    this.__check_type(other);
+    return new Bool(this.to_js() < other.to_js());
+  }
+  __gt_eq__(other) {
+    this.__check_type(other);
+    return new Bool(this.to_js() >= other.to_js());
+  }
+  __lt_eq__(other) {
+    this.__check_type(other);
+    return new Bool(this.to_js() <= other.to_js());
+  }
+  __mult__(other) {
+    this.__check_type(other);
+    return new Int(this.to_js() * other.to_js());
+  }
+  __div__(other) {
+    this.__check_type(other);
+    return new Int(this.to_js() / other.to_js());
+  }
+  __plus__(other) {
+    this.__check_type(other);
+    return new Int(this.to_js() + other.to_js());
+  }
+  __minus__(other) {
+    this.__check_type(other);
+    return new Int(this.to_js() - other.to_js());
+  }
+}
+
+class Float extends Value {
+  to_ps() {
+    return new Str(this.to_js().toString().yellow);
+  }
+
+  to_i() {
+    return new Int(Math.floor(this.to_js()));
+  }
+  __gt__(other) {
+    this.__check_type(other);
+    return new Float(this.to_js() > other.to_js());
+  }
+  __lt__(other) {
+    this.__check_type(other);
+    return new Float(this.to_js() < other.to_js());
+  }
+  __gt_eq__(other) {
+    this.__check_type(other);
+    return new Bool(this.to_js() >= other.to_js());
+  }
+  __lt_eq__(other) {
+    this.__check_type(other);
+    return new Bool(this.to_js() <= other.to_js());
+  }
+  __mult__(other) {
+    this.__check_type(other);
+    return new Float(this.to_js() * other.to_js());
+  }
+  __div__(other) {
+    this.__check_type(other);
+    return new Float(this.to_js() / other.to_js());
+  }
+  __plus__(other) {
+    this.__check_type(other);
+    return new Float(this.to_js() + other.to_js());
+  }
+  __minus__(other) {
+    this.__check_type(other);
+    return new Float(this.to_js() - other.to_js());
+  }
+}
+
+class Str extends Value {
+  to_ps() {
+    return new Str(`"${this.to_js()}"`.green);
+  }
+  to_s() {
+    return this;
+  }
+  to_i() {
+    const val = parseInt(this.to_js());
+    if (!isNaN(val)) {
+      return new Int(val);
+    } else {
+      return new Nil();
+    }
+  }
+  to_f() {
+    const val = Number(this.to_js());
+    if (!isNaN(val)) {
+      return new Float(val);
+    } else {
+      return new Nil();
+    }
+  }
+  trim() {
+    return new Str(this.to_js().trim());
+  }
+  __gt__(other) {
+    this.__check_type(other);
+    return new Str(this.to_js() > other.to_js());
+  }
+  __lt__(other) {
+    this.__check_type(other);
+    return new Str(this.to_js() < other.to_js());
+  }
+  __mult__(other) {
+    this.__check_type(other, Int);
+    let str = this.to_js();
+    for (let i = 0; i < other.to_js() - 1; i++) {
+      str += this.to_js();
+    }
+    return new Str(str);
+  }
+  __plus__(other) {
+    this.__check_type(other);
+    return new Str(this.to_js() + other.to_js());
+  }
+}
+
+class Record extends Value {
+  __size = 0;
+  constructor(value) {
+    assertType(value, Array);
+    super(value);
+    this.__size = allEntries(value).length;
+  }
+  __lookup__(key) {
+    const value = this.to_js().find(([k, v]) => {
+      if (k.__eq__(key).to_js()) {
+        return v;
+      }
+    });
+    return (value && value[1]) || new Nil();
+  }
+  __unsafe_insert__(key, value) {
+    this.__value.push([key, value]);
+  }
+  size() {
+    return new Int(this.to_js().length);
+  }
+  has_q(key) {
+    return this.__lookup__(key).nil_q().bang();
+  }
+  to_l() {
+    return new List(this.to_js().map((l) => new List(l)));
+  }
+  each(fn) {
+    this.to_js().forEach(([key, value], i) => {
+      fn(key, value, i);
+    });
+  }
+  combine(record) {
+    let newRecord = this.to_js().slice();
+
+    record.each((k, v) => {
+      newRecord = newRecord.filter(([k1]) => !k1.__eq__(k).to_js());
+      newRecord.push([k, v]);
+    });
+    return Record.new(newRecord);
+  }
+  insert(key, value) {
+    let newRecord = this.to_js().slice();
+    newRecord = newRecord.filter(([k]) => !k.__eq__(key).to_js());
+    newRecord.push([key, value]);
+    return Record.new(newRecord);
+  }
+  every(fn) {
+    return Bool.new(
+      this.to_js().every(([k, v]) => {
+        return fn(k, v).to_js();
+      })
+    );
+  }
+  map(fn) {
+    return Record.new(
+      this.to_js().map(([k, v]) => {
+        const k_v = fn(k, v);
+        return [k_v.__lookup__(Int.new(0)), k_v.__lookup__(Int.new(1))];
+      })
+    );
+  }
+  to_ps() {
+    let s = "{";
+    this.each((key, value, i) => {
+      let key_s;
+      if (key instanceof Sym) {
+        key_s = (key.to_js().toString().slice(7, -1) + ":").blue;
+      } else {
+        key_s = `[${key.to_ps().to_js()}]:`;
+      }
+      s += ` ${key_s} ${value.to_ps().to_js()}`;
+      if (i < this.size().to_js() - 1) s += ",";
+    });
+    return new Str(s + " }");
+  }
+}
+
+class List extends Value {
+  __lookup__(index) {
+    return this.to_js()[index.to_js()];
+  }
+  get size() {
+    return new Int(this.to_js().length);
+  }
+  to_r() {
+    const record = [];
+    for (let item of this.to_js()) {
+      const [k, v] = [item.__lookup__(Int.new(0)), item.__lookup__(Int.new(1))];
+      record.push([k, v]);
+    }
+    return new Record(record);
+  }
+
+  to_ps() {
+    // I'm aware, this is gross lol. It'll be much better once we write it in peacock
+    let s = "[";
+    s += this.to_js()
+      .map((val) => val.to_ps().to_js())
+      .join(", ");
+    s += "]";
+    return new Str(s);
+  }
+
+  __eq__(other) {
+    this.__check_type(other);
+    if (this === other) return new Bool(true);
+    return this.every((item, i) => item.__eq__(other.__lookup__(i)));
+  }
+
+  __plus__(other) {
+    this.__check_type(other);
+    return new List([...this.to_js(), ...other.to_js()]);
+  }
+
+  has_q(other) {
+    return new Bool(this.to_js().some((val) => val.__eq__(other).to_js()));
+  }
+
+  every(fn) {
+    for (let i = 0; i < this.to_js().length; i++) {
+      const result = fn(this.to_js()[i], Int.new(i));
+      if (!result.to_js()) {
+        return new Bool(false);
+      }
+    }
+    return new Bool(true);
+  }
+
+  any_q(fn) {
+    for (let i = 0; i < this.to_js().length; i++) {
+      const result = fn(this.to_js()[i], Int.new(i));
+      if (result.to_js()) {
+        return new Bool(true);
+      }
+    }
+    return new Bool(false);
+  }
+
+  flat() {
+    let new_list = [];
+    for (let list of this.to_js()) {
+      assertType(list, List);
+      new_list = new_list.concat(list.to_js());
+    }
+    return List.new(new_list);
+  }
+
+  size() {
+    return new Int(this.to_js().length);
+  }
+
+  first(fn) {
+    for (let item of this.to_js()) {
+      const result = fn(item);
+      // This is definitely wrong
+      if (result) return result;
+    }
+    return new Nil();
+  }
+
+  map(fn) {
+    return new List(this.to_js().map((item, i) => fn(item, Int.new(i), this)));
+  }
+
+  last_index() {
+    return Int.new(this.size().to_js() - 1);
+  }
+
+  each(fn) {
+    this.to_js().forEach(fn);
+  }
+
+  filter(fn) {
+    return new List(
+      this.to_js().filter((v) => {
+        const result = fn(v);
+        // this.__check_type(result, Bool);
+        return result.to_b().to_js();
+      })
+    );
+  }
+
+  __minus__(other) {
+    this.__check_type(other);
+    return this.filter((val) => other.include__q(val));
+  }
+}
+
+class Sym extends Value {
+  constructor(sym) {
+    if (typeof sym === "symbol") {
+      super(sym);
+    } else if (sym instanceof Str) {
+      super(Peacock.symbol(sym.to_js()));
+    } else if (typeof sym === "string") {
+      super(Peacock.symbol(sym));
+    } else {
+      throw new NotReached();
+    }
+  }
+
+  to_s() {
+    return new Str(`${this.to_js().toString().slice(7, -1)}`);
+  }
+
+  to_ps() {
+    return new Str(`:${this.to_js().toString().slice(7, -1)}`.blue);
+  }
+}
+
+class DomNode {
+  constructor(name, attributes, children) {
+    assertType(name, Str);
+    assertType(attributes, Record);
+    assertType(children, List);
+    this.name = name;
+    this.attributes = attributes;
+    this.children = children;
+  }
+  static ["new"](name, attributes, children) {
+    return new DomNode(name, attributes, children);
+  }
+  _can_render(elem) {
+    return (
+      elem instanceof DomTextNode ||
+      elem instanceof DomNode ||
+      elem instanceof Element
+    );
+  }
+  render_list(list, elem) {
+    list.each((child) => {
+      if (child instanceof Nil) {
+        // nothing
+      } else if (this._can_render(child)) {
+        elem.append(child.to_dom());
+      } else if (child instanceof Str) {
+        elem.append(new DomTextNode(child.to_s()).to_dom());
+      } else if (child instanceof List) {
+        this.render_list(child, elem);
+      } else {
+        debugger;
+        throw new NotReached();
+      }
+    });
+  }
+  to_dom() {
+    const elem = document.createElement(this.name.to_js());
+    this.attributes.each((name, value) => {
+      if (typeof value === "function") {
+        elem[name.to_s().to_js()] = value;
+      } else {
+        elem.setAttribute(name.to_s().to_js(), value.to_js());
+      }
+    });
+    this.children.each((expr) => {
+      if (expr instanceof List) {
+        this.render_list(expr, elem);
+      } else if (this._can_render(expr)) {
+        elem.append(expr.to_dom());
+      } else if (expr instanceof Nil) {
+        // do nothing
+      } else {
+        const node = new DomTextNode(expr.to_s()).to_dom();
+        if (node instanceof Text && node.nodeValue.match(/[a-zA-Z]+/)) {
+          node.nodeValue += " ";
+        }
+        elem.append(node);
+      }
+    });
+    return elem;
+  }
+}
+
+class Nil extends Value {
+  nil_q() {
+    return new Bool(true);
+  }
+
+  to_ps() {
+    return new Str("nil".blue);
+  }
+}
+
+class DomTextNode extends Value {
+  to_dom() {
+    // TODO: find way to not have __value double nested like this
+    return document.createTextNode(this.__value.to_js());
+  }
+}
+
+class Context extends Value {
+  _value = Nil.new();
+  listeners = [];
+  _register_listener(fn) {
+    this.listeners.push(fn);
+  }
+  value() {
+    return this._value;
+  }
+  set_value(v) {
+    this._value = v;
+    this.listeners.forEach((fn) => fn(v));
+  }
+}
+
+class Element {
+  _state = Nil.new();
+  init_state() {
+    return Nil.new();
+  }
+  constructor(props) {
+    this._props = props;
+    this.use_context();
+  }
+  context() {
+    return Nil.new();
+  }
+  context_value() {
+    return (this.context().value && this.context().value()) || Nil.new();
+  }
+  set_context(value) {
+    if (!(this.context() instanceof Context)) throw new NotReached();
+    this.context().set_value(value);
+  }
+  use_context() {
+    if (this.context() instanceof Context) {
+      this.context()._register_listener(() => this.render_to_dom());
+    }
+  }
+  dom_id;
+  style_sheet;
+  static ["new"](props) {
+    return new this(props);
+  }
+  __generate_class_id() {
+    if (this.dom_id) throw new NotReached();
+    const id = Array.from({ length: 10 })
+      .map((i) => parseInt(Math.random() * 10))
+      .join("");
+    this.dom_id = "c" + id;
+    return this.dom_id;
+  }
+  create_style_sheet() {
+    if (this.style_sheet) return this.style_sheet;
+    this.style_sheet = document.createElement("style");
+    document.body.append(this.style_sheet);
+    return this.style_sheet;
+  }
+  style() {
+    return new Str("");
+  }
+  state() {
+    if (this._state.nil_q().to_js()) {
+      return this.init_state();
+    } else {
+      return this._state;
+    }
+  }
+  props() {
+    return this._props || Nil.new();
+  }
+  set_state(value) {
+    this._state = value;
+    this.render_to_dom();
+  }
+
+  prev_props = Nil.new();
+  prev_state = Nil.new();
+  prev_context = Nil.new();
+  render_to_dom() {
+    if (
+      this.prev_state.__eq__(this.state()).to_js() &&
+      this.prev_props.__eq__(this.props()).to_js() &&
+      this.prev_context.__eq__(this.context_value()).to_js()
+    ) {
+      return;
+    }
+    const node = this.to_dom();
+    const [class_name] = node.classList;
+    assert(this.dom_id === class_name);
+    const elements = document.getElementsByClassName(class_name);
+    assert(elements.length === 1);
+    elements[0].replaceWith(node);
+  }
+
+  view() {
+    return Nil.new();
+  }
+  class_name() {
+    return this.dom_id || this.__generate_class_id();
+  }
+  replace_styles() {
+    const { sheet } = this.create_style_sheet();
+    for (let i = 0; i < sheet.cssRules.length; i++) {
+      sheet.deleteRule(i);
+    }
+    const styles = compile_css(
+      this.style(this.props(), this.state()).to_js(),
+      `.${this.class_name()}`
+    );
+    for (let style of styles) {
+      sheet.insertRule(style);
+    }
+  }
+
+  to_dom() {
+    try {
+      let elem = this.view(this.props(), this.state(), this.context_value());
+      this.prev_state = this.state();
+      this.prev_props = this.props();
+      this.prev_context = this.context_value();
+      if (elem instanceof Element) {
+        return elem.to_dom();
+      }
+      this.replace_styles();
+      const new_attrs = elem.attributes.insert(
+        Sym.new("class"),
+        Str.new(this.class_name())
+      );
+      return new DomNode(elem.name, new_attrs, elem.children).to_dom();
+    } catch (e) {
+      console.error(e, this.name);
+    }
+  }
+}
+
+class Div extends Element {
+  view(props) {
+    return new DomNode(
+      Str.new("div"),
+      props,
+      List.new([props.__lookup__(Sym.new("children"))])
+    );
+  }
+}
+
+class Article extends Element {
+  view(props) {
+    return new DomNode(
+      Str.new("article"),
+      props,
+      List.new([props.__lookup__(Sym.new("children"))])
+    );
+  }
+}
+
+class A extends Element {
+  view(props) {
+    return new DomNode(
+      Str.new("a"),
+      props,
+      List.new([props.__lookup__(Sym.new("children"))])
+    );
+  }
+}
+
+const mount_element = (ElementClass, node) => {
+  node.append(new ElementClass().to_dom());
+};
+
+const print = (...params) => {
+  console.log(...params.map((p) => p.to_ps().to_js()));
+};
+const inspect = { print };
+
+const document_body = globalThis.document && document.body;
+
+const __try = (fn) => {
+  try {
+    return fn();
+  } catch (e) {
+    return undefined;
+  }
+};
+const Peacock = {
+  symbol: symName => __Symbols[symName] || (__Symbols[symName] = Symbol(symName)),
+};
+let pea_module, f71b9bdd0b4d44fbcccc76e13e61c5a16209a, __VALUE, Header, aa25d1294cd3262144d42fb0c3488ffbe1cedafd, Skills, b97d67909a051c657389b6ff5d12ebde1f49e94f, Entry, fd5b17c340ad7705b30b8b433c74330e6a92c97, skills, skill_context;
+pea_module = Record.new([
+
+]);
+f71b9bdd0b4d44fbcccc76e13e61c5a16209a = (() => {
+  let pea_module;
+  pea_module = Record.new([
+
+  ]);
+  class Header extends Element {
+  
+  style() {
+        return Str.new(`
+    transition: margin 200ms ease-in-out, padding 200ms ease-in-out, background-color 300ms ease-in-out 0ms;
+    margin: 25px 20% 0 20%;
+    padding-top: 0;
+    position: sticky;
+    top: 0px;
+    display: flex;
+    flex-direction: column;
+    z-index: 20;
+    align-items: center;
+    hr {
+      width: 100%;
+    }
+    h1 {
+      text-align: center;
+      line-height: 1em;
+      padding-bottom: 0.25em;
+    }
+  `);
+  }
+
+view() {
+        return DomNode.new(Str.new(`div`), Record.new([
+
+    ]), List.new([DomNode.new(Str.new(`h1`), Record.new([
+
+    ]), List.new([DomTextNode.new(Str.new(`Marcelle Rusu `))])), DomNode.new(Str.new(`hr`), Record.new([
+
+    ]), List.new([])), DomNode.new(Str.new(`h2`), Record.new([
+
+    ]), List.new([Str.new(`Front-end`), DomTextNode.new(Str.new(`Developer `))]))]));
+  }
+};
+  pea_module.__unsafe_insert__(Sym.new(Peacock.symbol("Header")), Header);
+  return pea_module;
+})();
+if (Schema.for(Record.new([
+  [Sym.new(Peacock.symbol("Header")), Schema.any(Sym.new(Peacock.symbol("")))]
+])).valid_q(f71b9bdd0b4d44fbcccc76e13e61c5a16209a).to_js()) {
+  __VALUE = f71b9bdd0b4d44fbcccc76e13e61c5a16209a;
+  Header = __VALUE.__lookup__(Sym.new(Peacock.symbol("Header")));
+} else {
+  throw Str.new(`Match error`);
+};
+aa25d1294cd3262144d42fb0c3488ffbe1cedafd = (() => {
+  let pea_module, fd5b17c340ad7705b30b8b433c74330e6a92c97, __VALUE, Highlight;
+  pea_module = Record.new([
+
+  ]);
+  fd5b17c340ad7705b30b8b433c74330e6a92c97 = (() => {
+    let pea_module, skills;
+    pea_module = Record.new([
+
+    ]);
+    class Highlight extends Div {
+  
+  color(is_active) {
+                if ((__try((() => {
+        return eval(`is_active`);
+      })) || this.is_active()).to_js()) {
+        return Str.new(`#fdff328f`);
+      } else {
+        return Str.new(`unset`);
+      };
+  }
+
+style(props) {
+          return Str.new(`
+    display: inline;
+    background-color: `).__plus__(this.color((__try((() => {
+        return eval(`props`);
+      })) || this.props()).__lookup__(Sym.new(Peacock.symbol("active")))).to_s()).__plus__(Str.new(`;
+  `));
+  }
+};
+    pea_module.__unsafe_insert__(Sym.new(Peacock.symbol("Highlight")), Highlight);
+    skills = List.new([List.new([Record.new([
+      [Sym.new(Peacock.symbol("parent")), Str.new(`JavaScript`)],
+      [Sym.new(Peacock.symbol("sub_skills")), List.new([Str.new(`React`), Str.new(`TypeScript`), Str.new(`Node.js`)])]
+    ]), Record.new([
+      [Sym.new(Peacock.symbol("parent")), Str.new(`Ruby`)],
+      [Sym.new(Peacock.symbol("sub_skills")), List.new([Str.new(`Rails`)])]
+    ])]), List.new([Record.new([
+      [Sym.new(Peacock.symbol("parent")), Str.new(`SQL`)],
+      [Sym.new(Peacock.symbol("sub_skills")), List.new([Str.new(`MySQL`), Str.new(`PostgreSQL`)])]
+    ]), Record.new([
+      [Sym.new(Peacock.symbol("parent")), Str.new(`NoSQL`)],
+      [Sym.new(Peacock.symbol("sub_skills")), List.new([Str.new(`Redis`), Str.new(`MongoDB`)])]
+    ])])]);
+    pea_module.__unsafe_insert__(Sym.new(Peacock.symbol("skills")), skills);
+    return pea_module;
+  })();
+    if (Schema.for(Record.new([
+    [Sym.new(Peacock.symbol("Highlight")), Schema.any(Sym.new(Peacock.symbol("")))]
+  ])).valid_q(fd5b17c340ad7705b30b8b433c74330e6a92c97).to_js()) {
+    __VALUE = fd5b17c340ad7705b30b8b433c74330e6a92c97;
+    Highlight = __VALUE.__lookup__(Sym.new(Peacock.symbol("Highlight")));
+  } else {
+    throw Str.new(`Match error`);
+  };
+  class Item extends Element {
+  
+  context() {
+        return (__try((() => {
+      return eval(`props`);
+    })) || this.props()).__lookup__(Sym.new(Peacock.symbol("skill_context")));
+  }
+
+margin_right(is_margin) {
+            if ((__try((() => {
+      return eval(`is_margin`);
+    })) || this.is_margin()).to_js()) {
+      return Str.new(`5px`);
+    } else {
+      return Str.new(``);
+    };
+  }
+
+style(props) {
+        return Str.new(`
+    margin-right: `).__plus__(this.margin_right((__try((() => {
+      return eval(`props`);
+    })) || this.props()).__lookup__(Sym.new(Peacock.symbol("margin")))).to_s()).__plus__(Str.new(`;
+    color: unset;
+    a {
+      &:active {
+        color: gray;
+      }
+    }
+  `));
+  }
+
+comma(cond) {
+            if ((__try((() => {
+      return eval(`cond`);
+    })) || this.cond()).to_js()) {
+      return Str.new(`,`);
+    } else {
+      return Nil.new(null);
+    };
+  }
+
+set_active_skill() {
+            if ((__try((() => {
+      return eval(`context`);
+    })) || this.context()).value().__eq__((__try((() => {
+      return eval(`props`);
+    })) || this.props()).__lookup__(Sym.new(Peacock.symbol("name")))).to_js()) {
+      return this.set_context(Nil.new(null));
+    } else {
+      return this.set_context((__try((() => {
+        return eval(`props`);
+      })) || this.props()).__lookup__(Sym.new(Peacock.symbol("name"))));
+    };
+  }
+
+view(props, _, selected_skill) {
+        return DomNode.new(Str.new(`span`), Record.new([
+
+    ]), List.new([DomNode.new(Str.new(`a`), Record.new([
+      [Sym.new(Peacock.symbol("onclick")), ((__ANON_SHORT_ID) => {
+        return (__try((() => {
+          return eval(`set_active_skill`);
+        })) || this.set_active_skill());
+      })]
+    ]), List.new([Highlight.new(Record.new([
+      [Sym.new(Peacock.symbol("active")), (__try((() => {
+        return eval(`props`);
+      })) || this.props()).__lookup__(Sym.new(Peacock.symbol("name"))).__eq__((__try((() => {
+        return eval(`selected_skill`);
+      })) || this.selected_skill()))],
+      [Sym.new(Peacock.symbol("children")), List.new([(__try((() => {
+        return eval(`props`);
+      })) || this.props()).__lookup__(Sym.new(Peacock.symbol("name")))])]
+    ]))])), this.comma((__try((() => {
+      return eval(`props`);
+    })) || this.props()).__lookup__(Sym.new(Peacock.symbol("comma"))))]));
+  }
+};
+  class Skill extends Element {
+  
+  style() {
+        return Str.new(`
+    margin-right: 5px;
+    div {
+      display: inline;
+    }
+  `);
+  }
+
+view(props) {
+        return DomNode.new(Str.new(`div`), Record.new([
+
+    ]), List.new([Item.new(Record.new([
+      [Sym.new(Peacock.symbol("name")), (__try((() => {
+        return eval(`props`);
+      })) || this.props()).__lookup__(Sym.new(Peacock.symbol("parent")))],
+      [Sym.new(Peacock.symbol("margin")), Bool.new(true)],
+      [Sym.new(Peacock.symbol("skill_context")), (__try((() => {
+        return eval(`props`);
+      })) || this.props()).__lookup__(Sym.new(Peacock.symbol("skill_context")))]
+    ])), Str.new(`(`), (__try((() => {
+      return eval(`props`);
+    })) || this.props()).__lookup__(Sym.new(Peacock.symbol("sub_skills"))).map(((name, i, l) => {
+      return DomNode.new(Str.new(`div`), Record.new([
+
+      ]), List.new([Item.new(Record.new([
+        [Sym.new(Peacock.symbol("name")), (__try((() => {
+          return eval(`name`);
+        })) || this.name())],
+        [Sym.new(Peacock.symbol("comma")), (__try((() => {
+          return eval(`i`);
+        })) || this.i()).__lt__((__try((() => {
+          return eval(`l`);
+        })) || this.l()).last_index())],
+        [Sym.new(Peacock.symbol("margin")), (__try((() => {
+          return eval(`i`);
+        })) || this.i()).__lt__((__try((() => {
+          return eval(`l`);
+        })) || this.l()).last_index())]
+      ]))]));
+    })), Str.new(`)`)]));
+  }
+};
+  class SkillRow extends Element {
+  
+  style() {
+        return Str.new(`
+    display: flex;
+    justify-content: center;
+    margin: 0;
+    padding: 0;
+  `);
+  }
+
+view(props) {
+        return DomNode.new(Str.new(`div`), Record.new([
+
+    ]), List.new([(__try((() => {
+      return eval(`props`);
+    })) || this.props()).__lookup__(Sym.new(Peacock.symbol("skills"))).map(((__ANON_SHORT_ID) => {
+      return Skill.new(Record.new([
+        [Sym.new(Peacock.symbol("parent")), __ANON_SHORT_ID.__lookup__(Sym.new(Peacock.symbol("parent")))],
+        [Sym.new(Peacock.symbol("sub_skills")), __ANON_SHORT_ID.__lookup__(Sym.new(Peacock.symbol("sub_skills")))],
+        [Sym.new(Peacock.symbol("skill_context")), (__try((() => {
+          return eval(`props`);
+        })) || this.props()).__lookup__(Sym.new(Peacock.symbol("skill_context")))]
+      ]));
+    }))]));
+  }
+};
+  class Skills extends Element {
+  
+  style() {
+        return Str.new(`
+    margin: 10px 20% 0 20%;
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+  `);
+  }
+
+view(props) {
+        return DomNode.new(Str.new(`div`), Record.new([
+
+    ]), List.new([DomNode.new(Str.new(`div`), Record.new([
+
+    ]), List.new([(__try((() => {
+      return eval(`props`);
+    })) || this.props()).__lookup__(Sym.new(Peacock.symbol("skills"))).map(((__ANON_SHORT_ID) => {
+      return SkillRow.new(Record.new([
+        [Sym.new(Peacock.symbol("skills")), __ANON_SHORT_ID],
+        [Sym.new(Peacock.symbol("skill_context")), (__try((() => {
+          return eval(`props`);
+        })) || this.props()).__lookup__(Sym.new(Peacock.symbol("skill_context")))]
+      ]));
+    }))]))]));
+  }
+};
+  pea_module.__unsafe_insert__(Sym.new(Peacock.symbol("Skills")), Skills);
+  return pea_module;
+})();
+if (Schema.for(Record.new([
+  [Sym.new(Peacock.symbol("Skills")), Schema.any(Sym.new(Peacock.symbol("")))]
+])).valid_q(aa25d1294cd3262144d42fb0c3488ffbe1cedafd).to_js()) {
+  __VALUE = aa25d1294cd3262144d42fb0c3488ffbe1cedafd;
+  Skills = __VALUE.__lookup__(Sym.new(Peacock.symbol("Skills")));
+} else {
+  throw Str.new(`Match error`);
+};
+b97d67909a051c657389b6ff5d12ebde1f49e94f = (() => {
+  let pea_module, fd5b17c340ad7705b30b8b433c74330e6a92c97, __VALUE, Highlight, skills;
+  pea_module = Record.new([
+
+  ]);
+  fd5b17c340ad7705b30b8b433c74330e6a92c97 = (() => {
+    let pea_module, skills;
+    pea_module = Record.new([
+
+    ]);
+    class Highlight extends Div {
+  
+  color(is_active) {
+                if ((__try((() => {
+        return eval(`is_active`);
+      })) || this.is_active()).to_js()) {
+        return Str.new(`#fdff328f`);
+      } else {
+        return Str.new(`unset`);
+      };
+  }
+
+style(props) {
+          return Str.new(`
+    display: inline;
+    background-color: `).__plus__(this.color((__try((() => {
+        return eval(`props`);
+      })) || this.props()).__lookup__(Sym.new(Peacock.symbol("active")))).to_s()).__plus__(Str.new(`;
+  `));
+  }
+};
+    pea_module.__unsafe_insert__(Sym.new(Peacock.symbol("Highlight")), Highlight);
+    skills = List.new([List.new([Record.new([
+      [Sym.new(Peacock.symbol("parent")), Str.new(`JavaScript`)],
+      [Sym.new(Peacock.symbol("sub_skills")), List.new([Str.new(`React`), Str.new(`TypeScript`), Str.new(`Node.js`)])]
+    ]), Record.new([
+      [Sym.new(Peacock.symbol("parent")), Str.new(`Ruby`)],
+      [Sym.new(Peacock.symbol("sub_skills")), List.new([Str.new(`Rails`)])]
+    ])]), List.new([Record.new([
+      [Sym.new(Peacock.symbol("parent")), Str.new(`SQL`)],
+      [Sym.new(Peacock.symbol("sub_skills")), List.new([Str.new(`MySQL`), Str.new(`PostgreSQL`)])]
+    ]), Record.new([
+      [Sym.new(Peacock.symbol("parent")), Str.new(`NoSQL`)],
+      [Sym.new(Peacock.symbol("sub_skills")), List.new([Str.new(`Redis`), Str.new(`MongoDB`)])]
+    ])])]);
+    pea_module.__unsafe_insert__(Sym.new(Peacock.symbol("skills")), skills);
+    return pea_module;
+  })();
+    if (Schema.for(Record.new([
+    [Sym.new(Peacock.symbol("Highlight")), Schema.any(Sym.new(Peacock.symbol("")))],
+    [Sym.new(Peacock.symbol("skills")), Schema.any(Sym.new(Peacock.symbol("")))]
+  ])).valid_q(fd5b17c340ad7705b30b8b433c74330e6a92c97).to_js()) {
+    __VALUE = fd5b17c340ad7705b30b8b433c74330e6a92c97;
+    Highlight = __VALUE.__lookup__(Sym.new(Peacock.symbol("Highlight")));
+    skills = __VALUE.__lookup__(Sym.new(Peacock.symbol("skills")));
+  } else {
+    throw Str.new(`Match error`);
+  };
+  class Details extends Element {
+  
+  style() {
+        return Str.new(`
+    transition: height 200ms ease, background-color 300ms ease-out 0ms;
+    &:hover {
+      background-color: white;
+    }
+    summary {
+      margin: 0 20% 0 20%;
+    }
+    article {
+      margin: 0 20% 0 20%;
+    }
+  `);
+  }
+
+view(props) {
+        return DomNode.new(Str.new(`details`), Record.new([
+      [Sym.new(Peacock.symbol("open")), (__try((() => {
+        return eval(`props`);
+      })) || this.props()).__lookup__(Sym.new(Peacock.symbol("open")))]
+    ]), List.new([(__try((() => {
+      return eval(`props`);
+    })) || this.props()).__lookup__(Sym.new(Peacock.symbol("children")))]));
+  }
+};
+  class Content extends Article {
+  
+  style() {
+        return Str.new(`font-size: 17px;`);
+  }
+};
+  class Skills extends Div {
+  
+  style() {
+        return Str.new(`
+    text-decoration: underline dotted;
+    text-decoration-thickness: 1px;
+  `);
+  }
+};
+  class Skill extends Element {
+  
+  context() {
+        return (__try((() => {
+      return eval(`props`);
+    })) || this.props()).__lookup__(Sym.new(Peacock.symbol("skill_context")));
+  }
+
+comma(cond) {
+            if ((__try((() => {
+      return eval(`cond`);
+    })) || this.cond()).to_js()) {
+      return Str.new(`,`);
+    } else {
+      return Nil.new(null);
+    };
+  }
+
+selected_q() {
+        let parent;
+        if ((__try((() => {
+      return eval(`props`);
+    })) || this.props()).__lookup__(Sym.new(Peacock.symbol("skill"))).__eq__((__try((() => {
+      return eval(`context`);
+    })) || this.context()).value()).to_js()) {
+      return Bool.new(true);
+    } else {
+
+    };
+    parent = (__try((() => {
+      return eval(`skills`);
+    })) || this.skills()).first(((__ANON_SHORT_ID) => {
+      return __ANON_SHORT_ID.__lookup__(Sym.new(Peacock.symbol("parent"))).__eq__((__try((() => {
+        return eval(`context`);
+      })) || this.context()).value());
+    }));
+        if ((__try((() => {
+      return eval(`parent`);
+    })) || this.parent()).nil_q().to_js()) {
+      return Bool.new(false);
+    } else {
+
+    };
+    return (__try((() => {
+      return eval(`parent`);
+    })) || this.parent()).__lookup__(Sym.new(Peacock.symbol("sub_skills"))).has_q((__try((() => {
+      return eval(`context`);
+    })) || this.context()).value());
+  }
+
+view(props, _, selected_skill) {
+        return DomNode.new(Str.new(`span`), Record.new([
+
+    ]), List.new([Highlight.new(Record.new([
+      [Sym.new(Peacock.symbol("active")), (__try((() => {
+        return eval(`selected?`);
+      })) || this.selected_q())],
+      [Sym.new(Peacock.symbol("children")), List.new([(__try((() => {
+        return eval(`props`);
+      })) || this.props()).__lookup__(Sym.new(Peacock.symbol("skill")))])]
+    ])), this.comma((__try((() => {
+      return eval(`props`);
+    })) || this.props()).__lookup__(Sym.new(Peacock.symbol("comma"))))]));
+  }
+};
+  class Entry extends Element {
+  
+  view(props) {
+        return Details.new(Record.new([
+      [Sym.new(Peacock.symbol("open")), Bool.new(false)],
+      [Sym.new(Peacock.symbol("children")), List.new([DomNode.new(Str.new(`summary`), Record.new([
+
+      ]), List.new([DomNode.new(Str.new(`h2`), Record.new([
+
+      ]), List.new([(__try((() => {
+        return eval(`props`);
+      })) || this.props()).__lookup__(Sym.new(Peacock.symbol("title")))])), DomNode.new(Str.new(`div`), Record.new([
+
+      ]), List.new([DomNode.new(Str.new(`em`), Record.new([
+
+      ]), List.new([(__try((() => {
+        return eval(`props`);
+      })) || this.props()).__lookup__(Sym.new(Peacock.symbol("position")))])), DomNode.new(Str.new(`em`), Record.new([
+
+      ]), List.new([(__try((() => {
+        return eval(`props`);
+      })) || this.props()).__lookup__(Sym.new(Peacock.symbol("date_range")))]))]))])), Content.new(Record.new([
+        [Sym.new(Peacock.symbol("children")), List.new([(__try((() => {
+          return eval(`props`);
+        })) || this.props()).__lookup__(Sym.new(Peacock.symbol("children"))), Skills.new(Record.new([
+          [Sym.new(Peacock.symbol("children")), List.new([Str.new(`[`), (__try((() => {
+            return eval(`props`);
+          })) || this.props()).__lookup__(Sym.new(Peacock.symbol("skills"))).map(((skill, i, l) => {
+            return Skill.new(Record.new([
+              [Sym.new(Peacock.symbol("skill_context")), (__try((() => {
+                return eval(`props`);
+              })) || this.props()).__lookup__(Sym.new(Peacock.symbol("skill_context")))],
+              [Sym.new(Peacock.symbol("skill")), (__try((() => {
+                return eval(`skill`);
+              })) || this.skill())],
+              [Sym.new(Peacock.symbol("comma")), (__try((() => {
+                return eval(`i`);
+              })) || this.i()).__lt__((__try((() => {
+                return eval(`l`);
+              })) || this.l()).last_index())]
+            ]));
+          })), Str.new(`]`)])]
+        ]))])]
+      ]))])]
+    ]));
+  }
+};
+  pea_module.__unsafe_insert__(Sym.new(Peacock.symbol("Entry")), Entry);
+  return pea_module;
+})();
+if (Schema.for(Record.new([
+  [Sym.new(Peacock.symbol("Entry")), Schema.any(Sym.new(Peacock.symbol("")))]
+])).valid_q(b97d67909a051c657389b6ff5d12ebde1f49e94f).to_js()) {
+  __VALUE = b97d67909a051c657389b6ff5d12ebde1f49e94f;
+  Entry = __VALUE.__lookup__(Sym.new(Peacock.symbol("Entry")));
+} else {
+  throw Str.new(`Match error`);
+};
+fd5b17c340ad7705b30b8b433c74330e6a92c97 = (() => {
+  let pea_module, skills;
+  pea_module = Record.new([
+
+  ]);
+  class Highlight extends Div {
+  
+  color(is_active) {
+            if ((__try((() => {
+      return eval(`is_active`);
+    })) || this.is_active()).to_js()) {
+      return Str.new(`#fdff328f`);
+    } else {
+      return Str.new(`unset`);
+    };
+  }
+
+style(props) {
+        return Str.new(`
+    display: inline;
+    background-color: `).__plus__(this.color((__try((() => {
+      return eval(`props`);
+    })) || this.props()).__lookup__(Sym.new(Peacock.symbol("active")))).to_s()).__plus__(Str.new(`;
+  `));
+  }
+};
+  pea_module.__unsafe_insert__(Sym.new(Peacock.symbol("Highlight")), Highlight);
+  skills = List.new([List.new([Record.new([
+    [Sym.new(Peacock.symbol("parent")), Str.new(`JavaScript`)],
+    [Sym.new(Peacock.symbol("sub_skills")), List.new([Str.new(`React`), Str.new(`TypeScript`), Str.new(`Node.js`)])]
+  ]), Record.new([
+    [Sym.new(Peacock.symbol("parent")), Str.new(`Ruby`)],
+    [Sym.new(Peacock.symbol("sub_skills")), List.new([Str.new(`Rails`)])]
+  ])]), List.new([Record.new([
+    [Sym.new(Peacock.symbol("parent")), Str.new(`SQL`)],
+    [Sym.new(Peacock.symbol("sub_skills")), List.new([Str.new(`MySQL`), Str.new(`PostgreSQL`)])]
+  ]), Record.new([
+    [Sym.new(Peacock.symbol("parent")), Str.new(`NoSQL`)],
+    [Sym.new(Peacock.symbol("sub_skills")), List.new([Str.new(`Redis`), Str.new(`MongoDB`)])]
+  ])])]);
+  pea_module.__unsafe_insert__(Sym.new(Peacock.symbol("skills")), skills);
+  return pea_module;
+})();
+if (Schema.for(Record.new([
+  [Sym.new(Peacock.symbol("skills")), Schema.any(Sym.new(Peacock.symbol("")))]
+])).valid_q(fd5b17c340ad7705b30b8b433c74330e6a92c97).to_js()) {
+  __VALUE = fd5b17c340ad7705b30b8b433c74330e6a92c97;
+  skills = __VALUE.__lookup__(Sym.new(Peacock.symbol("skills")));
+} else {
+  throw Str.new(`Match error`);
+};
+skill_context = Context.new(Nil.new(null));
+class Main extends Element {
+  
+  style() {
+      return Str.new(`
+    width: 100vw;
+    height: 100vh;
+    top: 0;
+    position: absolute;
+    background: #f8f8ff;
+    font-family: 'Zen Kaku Gothic Antique', sans-serif;
+    font-size: 20px;
+    * {
+      font-weight: 100;
+      text-decoration-thickness: 1px;
+    }
+    a {
+      text-decoration: underline;
+      text-decoration-thickness: 1px;
+      cursor: pointer;
+      color: black;
+
+      &:focus {
+        color: gray;
+      }
+
+      &:active {
+        color: #444;
+      }
+    }
+
+    ul {
+      margin: 0;
+      list-style: url('/slash-solid.svg');
+    }
+
+    hr {
+      margin: 0;
+    }
+    h1 {
+      margin: 0;
+      font-size: 60px;
+    }
+    h2 {
+      margin: 0;
+      font-size: 27px;
+    }
+    p {
+      margin: 0;
+    }
+  `);
+  }
+
+view() {
+      return DomNode.new(Str.new(`div`), Record.new([
+
+  ]), List.new([Header.new(Record.new([
+
+  ])), Skills.new(Record.new([
+    [Sym.new(Peacock.symbol("skills")), (__try((() => {
+      return eval(`skills`);
+    })) || this.skills())],
+    [Sym.new(Peacock.symbol("skill_context")), (__try((() => {
+      return eval(`skill_context`);
+    })) || this.skill_context())]
+  ])), Entry.new(Record.new([
+    [Sym.new(Peacock.symbol("skill_context")), (__try((() => {
+      return eval(`skill_context`);
+    })) || this.skill_context())],
+    [Sym.new(Peacock.symbol("title")), Str.new(`NoRedInk`)],
+    [Sym.new(Peacock.symbol("position")), Str.new(`Full-Stack Engineer`)],
+    [Sym.new(Peacock.symbol("date_range")), Str.new(`Sept 2021 - Present`)],
+    [Sym.new(Peacock.symbol("skills")), List.new([Str.new(`Elm`), Str.new(`Haskell`), Str.new(`Rails`), Str.new(`MySQL`), Str.new(`Nix`), Str.new(`Git`)])],
+    [Sym.new(Peacock.symbol("children")), List.new([DomNode.new(Str.new(`ul`), Record.new([
+
+    ]), List.new([DomNode.new(Str.new(`li`), Record.new([
+
+    ]), List.new([DomTextNode.new(Str.new(`Worked on a tightly minus coupled 3 rd party integration with Schoology that was developed from start to pilot in 2 months `))]))]))])]
+  ])), Entry.new(Record.new([
+    [Sym.new(Peacock.symbol("skill_context")), (__try((() => {
+      return eval(`skill_context`);
+    })) || this.skill_context())],
+    [Sym.new(Peacock.symbol("title")), Str.new(`Vidyard`)],
+    [Sym.new(Peacock.symbol("position")), Str.new(`Software Developer`)],
+    [Sym.new(Peacock.symbol("date_range")), Str.new(`Sept 2020 - August 2021`)],
+    [Sym.new(Peacock.symbol("skills")), List.new([Str.new(`Rails`), Str.new(`Vue`), Str.new(`React`), Str.new(`LaunchDarkly`), Str.new(`MySQL`), Str.new(`Git`)])],
+    [Sym.new(Peacock.symbol("children")), List.new([DomNode.new(Str.new(`ul`), Record.new([
+
+    ]), List.new([DomNode.new(Str.new(`li`), Record.new([
+
+    ]), List.new([DomTextNode.new(Str.new(`Worked on a growth team to develop many concurrent feature minus gated experiments to increase Activation rates `))])), DomNode.new(Str.new(`li`), Record.new([
+
+    ]), List.new([DomTextNode.new(Str.new(`Implemented a LinkedIn injection which enabled users to record schema_and send videos from within the native LinkedIn chat UI `))]))]))])]
+  ])), Entry.new(Record.new([
+    [Sym.new(Peacock.symbol("skill_context")), (__try((() => {
+      return eval(`skill_context`);
+    })) || this.skill_context())],
+    [Sym.new(Peacock.symbol("title")), Str.new(`BitBakery Software`)],
+    [Sym.new(Peacock.symbol("position")), Str.new(`Full-Stack Developer`)],
+    [Sym.new(Peacock.symbol("date_range")), Str.new(`Jan 2019 - August 2020`)],
+    [Sym.new(Peacock.symbol("skills")), List.new([Str.new(`React`), Str.new(`Vue`), Str.new(`MongoDB`), Str.new(`MySQL`), Str.new(`Node.js`), Str.new(`Rails`), Str.new(`Git`)])],
+    [Sym.new(Peacock.symbol("children")), List.new([DomNode.new(Str.new(`ul`), Record.new([
+
+    ]), List.new([DomNode.new(Str.new(`li`), Record.new([
+
+    ]), List.new([DomTextNode.new(Str.new(`Maintained and developed browser based mobile and web apps for various clients `))])), DomNode.new(Str.new(`li`), Record.new([
+
+    ]), List.new([DomTextNode.new(Str.new(`Led migration of components from a mature server minus rendered project written in Jade div Pug to React `))]))]))])]
+  ])), Entry.new(Record.new([
+    [Sym.new(Peacock.symbol("skill_context")), (__try((() => {
+      return eval(`skill_context`);
+    })) || this.skill_context())],
+    [Sym.new(Peacock.symbol("title")), Str.new(`MappedIn`)],
+    [Sym.new(Peacock.symbol("position")), Str.new(`Software Developer (Intern)`)],
+    [Sym.new(Peacock.symbol("date_range")), Str.new(`Sept 2018 - Dec 2018`)],
+    [Sym.new(Peacock.symbol("skills")), List.new([Str.new(`React`), Str.new(`Redux`), Str.new(`MongoDB`), Str.new(`Git`), Str.new(`Node.js`), Str.new(`Enzyme`)])],
+    [Sym.new(Peacock.symbol("children")), List.new([DomNode.new(Str.new(`ul`), Record.new([
+
+    ]), List.new([DomNode.new(Str.new(`li`), Record.new([
+
+    ]), List.new([DomTextNode.new(Str.new(`Worked primarily on a content management system developed to serve indoor map maintainers `))])), DomNode.new(Str.new(`li`), Record.new([
+
+    ]), List.new([DomTextNode.new(Str.new(`Migrated legacy state management to Redux `))]))]))])]
+  ])), Entry.new(Record.new([
+    [Sym.new(Peacock.symbol("skill_context")), (__try((() => {
+      return eval(`skill_context`);
+    })) || this.skill_context())],
+    [Sym.new(Peacock.symbol("title")), Str.new(`Alida (FKA Vision Critical)`)],
+    [Sym.new(Peacock.symbol("position")), Str.new(`Software Developer (Intern)`)],
+    [Sym.new(Peacock.symbol("date_range")), Str.new(`May 2017 - Dec 2017`)],
+    [Sym.new(Peacock.symbol("skills")), List.new([Str.new(`C#`), Str.new(`React`), Str.new(`MS SQL`), Str.new(`.NET`), Str.new(`Git`), Str.new(`NUnit`)])],
+    [Sym.new(Peacock.symbol("children")), List.new([DomNode.new(Str.new(`ul`), Record.new([
+
+    ]), List.new([DomNode.new(Str.new(`li`), Record.new([
+
+    ]), List.new([DomTextNode.new(Str.new(`Merged features of an acquired company open_parenthesis Pressly close_parenthesis into Vision Critical `)), Str.new(`'`), DomTextNode.new(Str.new(`s product `))])), DomNode.new(Str.new(`li`), Record.new([
+
+    ]), List.new([DomTextNode.new(Str.new(`Built automated process of upgrading customers to use features of the acquired company open_parenthesis Pressly close_parenthesis `))]))]))])]
+  ])), Entry.new(Record.new([
+    [Sym.new(Peacock.symbol("skill_context")), (__try((() => {
+      return eval(`skill_context`);
+    })) || this.skill_context())],
+    [Sym.new(Peacock.symbol("title")), Str.new(`Peacock Programming Language`)],
+    [Sym.new(Peacock.symbol("position")), Str.new(`Personal Project`)],
+    [Sym.new(Peacock.symbol("date_range")), Str.new(`2021`)],
+    [Sym.new(Peacock.symbol("skills")), List.new([Str.new(`Ruby`), Str.new(`RSpec`), Str.new(`JavaScript`)])],
+    [Sym.new(Peacock.symbol("children")), List.new([DomNode.new(Str.new(`ul`), Record.new([
+
+    ]), List.new([DomNode.new(Str.new(`li`), Record.new([
+
+    ]), List.new([DomTextNode.new(Str.new(`An attempt to create my dream language `))])), DomNode.new(Str.new(`li`), Record.new([
+
+    ]), List.new([DomTextNode.new(Str.new(`Designed implemented front minus end language inspired by Clojure comma Elixir comma Ruby schema_and ML `))]))]))])]
+  ])), Entry.new(Record.new([
+    [Sym.new(Peacock.symbol("skill_context")), (__try((() => {
+      return eval(`skill_context`);
+    })) || this.skill_context())],
+    [Sym.new(Peacock.symbol("title")), Str.new(`Component TS`)],
+    [Sym.new(Peacock.symbol("position")), Str.new(`Personal Project`)],
+    [Sym.new(Peacock.symbol("date_range")), Str.new(`2017`)],
+    [Sym.new(Peacock.symbol("skills")), List.new([Str.new(`TypeScript`)])],
+    [Sym.new(Peacock.symbol("last_element")), Bool.new(true)],
+    [Sym.new(Peacock.symbol("children")), List.new([DomNode.new(Str.new(`ul`), Record.new([
+
+    ]), List.new([DomNode.new(Str.new(`li`), Record.new([
+
+    ]), List.new([DomTextNode.new(Str.new(`Front minus end library influenced by Elm to make functional style web applications in TypeScript `))])), DomNode.new(Str.new(`li`), Record.new([
+
+    ]), List.new([DomTextNode.new(Str.new(`Created to learn more about how front end libraries work schema_and to see if TypeScript `)), Str.new(`'`), DomTextNode.new(Str.new(`s type system was powerful enough to express TEA open_parenthesis the elm architecture close_parenthesis `))]))]))])]
+  ]))]));
+  }
+};
+__try(() => eval('Main')) && mount_element(Main, document.getElementById('main'))</script>
+    <style>
+      body {
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+      }
+    </style>
+  </html>

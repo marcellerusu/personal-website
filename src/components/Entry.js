@@ -14,11 +14,21 @@ const Skills = styled.div`
   text-decoration-thickness: 1px;
 `;
 
-const Entry = ({ title, position, dateRange, children, skills = [] }) => {
+const Entry = ({
+  title,
+  position,
+  dateRange,
+  children,
+  skills = [],
+  lastElement = false,
+}) => {
   title = mapTitle(title);
   const { selected } = useContext(SkillStore);
   return (
-    <Details open={skills.some((skill) => compareSkills(selected, skill))}>
+    <Details
+      open={skills.some((skill) => compareSkills(selected, skill))}
+      style={{ marginBottom: lastElement && "50px" }}
+    >
       <summary>
         <h3>{title}</h3>
         <div>

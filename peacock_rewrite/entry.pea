@@ -1,0 +1,79 @@
+import { Highlight, skills } from "./misc"
+
+class Details < Element =
+  style = "
+    transition: height 200ms ease, background-color 300ms ease-out 0ms;
+    &:hover {
+      background-color: white;
+    }
+    summary {
+      margin: 0 20% 0 20%;
+    }
+    article {
+      margin: 0 20% 0 20%;
+    }
+  "
+  view props =
+    <details open={props[:open]}>
+      {props[:children]}
+    </details>
+
+class Content < Article =
+  style = "font-size: 17px;"
+
+class Skills < Div =
+  style = "
+    text-decoration: underline dotted;
+    text-decoration-thickness: 1px;
+  "
+
+class Skill < Element =
+  context = props[:skill_context]
+  comma cond =
+    if cond
+      ","
+    else
+      nil
+    end
+
+  selected? =
+    if props[:skill] == context.value
+      return true
+    end
+    parent := skills.first #{ %[:parent] == context.value }
+    if parent.nil?
+      return false
+    end
+    parent[:sub_skills].has? context.value
+
+  view props _ selected_skill =
+    <span>
+      <Highlight active={selected?}>{props[:skill]}</Highlight>
+      {comma props[:comma]}
+    </span>
+
+export class Entry < Element =
+  view props =
+    <Details open={false}>
+      <summary>
+        <h2>{props[:title]}</h2>
+        <div>
+          <em>{props[:position]}</em>
+          <em>{props[:date_range]}</em>
+        </div>
+      </summary>
+      <Content>
+        {props[:children]}
+        <Skills>
+          {"["}
+          {props[:skills].map fn skill i l =>
+            <Skill
+              skill_context={props[:skill_context]}
+              skill={skill}
+              comma={i < l.last_index}
+            />
+          end}
+          {"]"}
+        </Skills>
+      </Content>
+    </Details>

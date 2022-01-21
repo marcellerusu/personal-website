@@ -1,0 +1,34 @@
+export class Highlight < Div =
+  color is_active =
+    if is_active
+      "#fdff328f"
+    else 
+      "unset"
+    end
+  style props = "
+    display: inline;
+    background-color: #{color props[:active]};
+  "
+
+export skills := [
+  [
+    {  
+      parent: "JavaScript",
+      sub_skills: ["React", "TypeScript", "Node.js"],
+    },
+    {
+      parent: "Ruby",
+      sub_skills: ["Rails"]
+    }
+  ],
+  [
+    {
+      parent: "SQL",
+      sub_skills: ["MySQL", "PostgreSQL"]
+    },
+    {
+      parent: "NoSQL",
+      sub_skills: ["Redis", "MongoDB"]
+    }
+  ]
+]

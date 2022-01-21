@@ -1,13 +1,10 @@
-import React, { useState } from "react";
+import { Router } from "@reach/router";
 import styled from "styled-components";
 
-import SkillStore from "./store/skill";
-import Hideable from "./components/ui/Hideable";
-
 import Header from "./components/Header";
-import Skills from "./components/Skills";
-import Entry from "./components/Entry";
-import Summary from "./components/Summary";
+import Summary from "./pages/Summary";
+import Resume from "./pages/Resume";
+import Peacock from "./pages/Peacock";
 
 const Main = styled.div`
   font-size: 20px;
@@ -20,6 +17,7 @@ const Main = styled.div`
     text-decoration: underline;
     text-decoration-thickness: 1px;
     cursor: pointer;
+    color: black;
 
     &:hover {
       color: gray;
@@ -55,151 +53,16 @@ const Main = styled.div`
   }
 `;
 
-const BODY_SECTIONS = {
-  SUMMARY: "SUMMARY",
-  ENTRIES: "ENTRIES",
-};
-
 function App() {
-  const [selectedSkill, setSelectedSkill] = useState(null);
-  const [bodySection, setBodySection] = useState(BODY_SECTIONS.SUMMARY);
   return (
-    <SkillStore.Provider
-      value={{ selected: selectedSkill, setSelected: setSelectedSkill }}
-    >
-      <Main id="main">
-        <Header />
-        <Hideable visible={bodySection === BODY_SECTIONS.SUMMARY}>
-          <Summary onDismiss={() => setBodySection(BODY_SECTIONS.ENTRIES)} />
-        </Hideable>
-        <Hideable visible={bodySection === BODY_SECTIONS.ENTRIES}>
-          <Skills />
-        </Hideable>
-        <Hideable visible={bodySection === BODY_SECTIONS.ENTRIES}>
-          <Entry
-            title="NoRedInk"
-            position="Full-Stack Engineer"
-            dateRange="Sept 2021 - Present"
-            skills={["Elm", "Haskell", "Rails", "MySQL", "Nix", "Git"]}
-          >
-            <ul>
-              <li>
-                Worked on a tightly-coupled 3rd party integration with Schoology
-                that was developed from start to pilot in 2 months
-              </li>
-            </ul>
-          </Entry>
-          <Entry
-            title="Vidyard"
-            position="Software Developer"
-            dateRange="Sept 2020 - August 2021"
-            skills={["Rails", "Vue", "React", "LaunchDarkly", "MySQL", "Git"]}
-          >
-            <ul>
-              <li>
-                Worked on a growth team to develop many concurrent feature-gated
-                experiments to increase Activation rates
-              </li>
-              <li>
-                Implemented a LinkedIn injection which enabled users to record &
-                send videos from within the native LinkedIn chat UI
-              </li>
-            </ul>
-          </Entry>
-          <Entry
-            title="BitBakery Software"
-            position="Full-Stack Developer"
-            dateRange="Jan 2019 - August 2020"
-            skills={[
-              "React",
-              "Vue",
-              "MongoDB",
-              "MySQL",
-              "Node.js",
-              "Rails",
-              "Git",
-            ]}
-          >
-            <ul>
-              <li>
-                Maintained and developed browser based mobile and web apps for
-                various clients
-              </li>
-              <li>
-                Led migration of components from a mature server-rendered
-                project written in Jade/Pug to React
-              </li>
-            </ul>
-          </Entry>
-          <Entry
-            title="MappedIn"
-            position="Software Developer (Intern)"
-            dateRange="Sept 2018 - Dec 2018"
-            skills={["React", "Redux", "MongoDB", "Git", "Node.js", "Enzyme"]}
-          >
-            <ul>
-              <li>
-                Worked primarily on a content management system developed to
-                serve indoor map maintainers
-              </li>
-              <li>Migrated legacy state management to Redux</li>
-            </ul>
-          </Entry>
-          <Entry
-            title="Alida (FKA Vision Critical)"
-            position="Software Developer (Intern)"
-            dateRange="May 2017 - Dec 2017"
-            skills={["C#", "React", "MS SQL", ".NET", "Git", "NUnit"]}
-          >
-            <ul>
-              <li>
-                Merged features of an acquired company (Pressly) into Vision
-                Critical’s product
-              </li>
-              <li>
-                Built automated process of upgrading customers to use features
-                of the acquired company (Pressly)
-              </li>
-            </ul>
-          </Entry>
-          <Entry
-            title="Peacock Programming Language"
-            position="Personal Project"
-            dateRange="2021"
-            skills={["Ruby", "RSpec", "JavaScript"]}
-          >
-            <ul>
-              <li>
-                "Create front-end applications with powerful/declarative
-                run-time assertions & concise view functions"
-              </li>
-              <li>
-                Designed implemented front-end language inspired by Clojure,
-                Elixir, Ruby & ML
-              </li>
-            </ul>
-          </Entry>
-          <Entry
-            title="Component TS"
-            position="Personal Project"
-            dateRange="2017"
-            skills={["TypeScript"]}
-          >
-            <ul>
-              <li>
-                Front-end library influenced by Elm to make functional style web
-                applications in TypeScript
-              </li>
-              <li>
-                Created to learn more about how front end libraries work & to
-                see if TypeScript's type system was powerful enough to express
-                TEA (the elm architecture)
-              </li>
-            </ul>
-          </Entry>
-        </Hideable>
-      </Main>
-    </SkillStore.Provider>
+    <Main id="main">
+      <Header />
+      <Router>
+        <Summary path="/" />
+        <Resume path="resume" />
+        <Peacock path="peacock" />
+      </Router>
+    </Main>
   );
 }
 
