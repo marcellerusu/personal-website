@@ -58,8 +58,7 @@ function App() {
     <Main id="main">
       <Header />
       <Router>
-        <Summary path="/" />
-        <Resume path="resume" />
+        <Resume path="/" />
         <Peacock path="peacock" />
       </Router>
     </Main>
