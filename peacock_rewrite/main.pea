@@ -58,7 +58,7 @@ class Main < Element =
       <Entry
         title="NoRedInk"
         position="Full-Stack Engineer"
-        date_range="Sept 2021 - Present"
+        date_range="September 2021 - December 2021"
         skills={["Elm", "Haskell", "Rails", "MySQL", "Nix", "Git"]}
       >
         <ul>
@@ -71,7 +71,7 @@ class Main < Element =
       <Entry
         title="Vidyard"
         position="Software Developer"
-        date_range="Sept 2020 - August 2021"
+        date_range="September 2020 - August 2021"
         skills={["Rails", "Vue", "React", "LaunchDarkly", "MySQL", "Git"]}
       >
         <ul>
@@ -88,7 +88,7 @@ class Main < Element =
       <Entry
         title="BitBakery Software"
         position="Full-Stack Developer"
-        date_range="Jan 2019 - August 2020"
+        date_range="Janurary 2019 - August 2020"
         skills={[
           "React",
           "Vue",
@@ -113,7 +113,7 @@ class Main < Element =
       <Entry
         title="MappedIn"
         position="Software Developer (Intern)"
-        date_range="Sept 2018 - Dec 2018"
+        date_range="September 2018 - December 2018"
         skills={["React", "Redux", "MongoDB", "Git", "Node.js", "Enzyme"]}
       >
         <ul>
@@ -127,7 +127,7 @@ class Main < Element =
       <Entry
         title="Alida (FKA Vision Critical)"
         position="Software Developer (Intern)"
-        date_range="May 2017 - Dec 2017"
+        date_range="May 2017 - December 2017"
         skills={["C#", "React", "MS SQL", ".NET", "Git", "NUnit"]}
       >
         <ul>
@@ -144,7 +144,7 @@ class Main < Element =
       <Entry
         title="Peacock Programming Language"
         position="Personal Project"
-        date_range="2021"
+        date_range="2021 - Present"
         skills={["Ruby", "RSpec", "JavaScript"]}
       >
         <ul>

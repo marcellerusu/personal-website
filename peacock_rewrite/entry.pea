@@ -7,19 +7,7 @@ class Expandable < Details =
     &:hover {
       background-color: white;
     }
-    summary {
-      list-style: none;
-      cursor: pointer;
-      margin: 0 20% 0 20%;
-    }
-    article {
-      cursor: pointer;
-      margin: 0 20% 0 20%;
-    }
   "
-
-class Content < Article =
-  style = "font-size: 17px;"
 
 class Skills < Div =
   style = "
@@ -52,6 +40,26 @@ class Skill < Element =
     </span>
 
 export class Entry < Element =
+  style = "
+    summary {
+      list-style: none;
+      cursor: pointer;
+      margin: 0 20% 0 20%;
+      h2 {
+        text-decoration: underline;
+        text-decoration-thickness: 1px;
+      }
+      .position-and-range {
+        display: flex;
+        justify-content: space-between;
+      }
+    }
+    article {
+      font-size: 17px;
+      cursor: pointer;
+      margin: 0 20% 0 20%;
+    }
+  "
   context = skill_context
   open? selected_skill =
     if props[:skills].has? selected_skill
@@ -68,12 +76,12 @@ export class Entry < Element =
       <Expandable open={open? selected_skill}>
         <summary>
           <h2>{props[:title]}</h2>
-          <div>
+          <div class_name="position-and-range">
             <em>{props[:position]}</em>
             <em>{props[:date_range]}</em>
           </div>
         </summary>
-        <Content>
+        <article>
           {props[:children]}
           <Skills>
             {"["}
@@ -86,6 +94,6 @@ export class Entry < Element =
             end}
             {"]"}
           </Skills>
-        </Content>
+        </article>
       </Expandable>
     </div>
