@@ -1,9 +1,8 @@
 import { Header } from "./header"
 import { Skills } from "./skills"
 import { Entry } from "./entry"
-import { skills } from "./misc"
+import { skills } from "./store"
 
-skill_context := Context.new nil
 class Main < Element =
   style = "
     width: 100vw;
@@ -55,9 +54,8 @@ class Main < Element =
   view =
     <div>
       <Header />
-      <Skills skills={skills} skill_context={skill_context}/>
+      <Skills skills={skills} />
       <Entry
-        skill_context={skill_context}
         title="NoRedInk"
         position="Full-Stack Engineer"
         date_range="Sept 2021 - Present"
@@ -65,13 +63,12 @@ class Main < Element =
       >
         <ul>
           <li>
-            Worked on a tightly-coupled 3rd party integration with Schoology
+            Worked on a tightly{"-"}coupled {"3rd"} party integration with Schoology
             that was developed from start to pilot in 2 months
           </li>
         </ul>
       </Entry>
       <Entry
-        skill_context={skill_context}
         title="Vidyard"
         position="Software Developer"
         date_range="Sept 2020 - August 2021"
@@ -89,7 +86,6 @@ class Main < Element =
         </ul>
       </Entry>
       <Entry
-        skill_context={skill_context}
         title="BitBakery Software"
         position="Full-Stack Developer"
         date_range="Jan 2019 - August 2020"
@@ -115,7 +111,6 @@ class Main < Element =
         </ul>
       </Entry>
       <Entry
-        skill_context={skill_context}
         title="MappedIn"
         position="Software Developer (Intern)"
         date_range="Sept 2018 - Dec 2018"
@@ -130,7 +125,6 @@ class Main < Element =
         </ul>
       </Entry>
       <Entry
-        skill_context={skill_context}
         title="Alida (FKA Vision Critical)"
         position="Software Developer (Intern)"
         date_range="May 2017 - Dec 2017"
@@ -148,7 +142,6 @@ class Main < Element =
         </ul>
       </Entry>
       <Entry
-        skill_context={skill_context}
         title="Peacock Programming Language"
         position="Personal Project"
         date_range="2021"
@@ -165,7 +158,6 @@ class Main < Element =
         </ul>
       </Entry>
       <Entry
-        skill_context={skill_context}
         title="Component TS"
         position="Personal Project"
         date_range="2017"

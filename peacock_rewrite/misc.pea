@@ -9,26 +9,3 @@ export class Highlight < Div =
     display: inline;
     background-color: #{color props[:active]};
   "
-
-export skills := [
-  [
-    {  
-      parent: "JavaScript",
-      sub_skills: ["React", "TypeScript", "Node.js"],
-    },
-    {
-      parent: "Ruby",
-      sub_skills: ["Rails"]
-    }
-  ],
-  [
-    {
-      parent: "SQL",
-      sub_skills: ["MySQL", "PostgreSQL"]
-    },
-    {
-      parent: "NoSQL",
-      sub_skills: ["Redis", "MongoDB"]
-    }
-  ]
-]
