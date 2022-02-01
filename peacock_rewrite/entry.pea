@@ -64,9 +64,10 @@ export class Entry < Element =
   context = skill_context
   open? selected_skill =
     return true if props[:skills].has? selected_skill
-    skill := skills.flat.find #{ %[:parent] == selected_skill }
-    return false if skill.nil?
-    skill[:sub_skills].any? #{ props[:skills].has?(%) }
+    skills.flat
+      .find #{ %[:parent] == selected_skill }
+      &[:sub_skills]&.any? #{ props[:skills].has?(%) }
+      .to_b
   view { title, position, date_range, children, skills } _ selected_skill =
     <div>
       <Expandable open={open? selected_skill}>
