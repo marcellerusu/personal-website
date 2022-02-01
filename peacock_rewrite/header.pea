@@ -1,5 +1,5 @@
 export class Header < Element =
-  style = "
+  style _ _ = "
     transition: margin 200ms ease-in-out, padding 200ms ease-in-out, background-color 300ms ease-in-out 0ms;
     margin: 25px 20% 0 20%;
     padding-top: 0;
@@ -18,7 +18,7 @@ export class Header < Element =
       padding-bottom: 0.25em;
     }
   "
-  view =
+  view _ _ _ =
     <div>
       <h1>Marcelle Rusu</h1>
       <hr></hr>

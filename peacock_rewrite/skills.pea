@@ -1,16 +1,12 @@
 import { Highlight } from "./misc"
-import { skill_context } from "./store"
+import { skill_context, skills } from "./store"
 
 class Item < Element =
   context = skill_context
-  margin_right is_margin =
-    if is_margin
-      "5px"
-    else
-      ""
-    end
-  style props = "
-    margin-right: #{margin_right props[:margin]};
+  margin_right { margin: true } = "5px"
+  margin_right _ = ""
+  style props _ = "
+    margin-right: #{margin_right props};
     color: unset;
     a {
       &:active {
@@ -18,40 +14,36 @@ class Item < Element =
       }
     }
   "
-  comma cond =
-    if cond
-      ","
-    else
-      nil
-    end
+  show_comma { comma: true } = ","
+  show_comma _ = nil
   set_active_skill selected_skill =
     if selected_skill == props[:name]
       set_context nil
     else
       set_context props[:name]
     end
-  view props _ selected_skill =
+  view { name } _ selected_skill =
     <span>
       <a onclick=#{set_active_skill selected_skill}>
-        <Highlight active={props[:name] == selected_skill}>
-          {props[:name]}
+        <Highlight active={name == selected_skill}>
+          {name}
         </Highlight>
       </a>
-      {comma props[:comma]}
+      {show_comma props}
     </span>
 
 class Skill < Element =
-  style = "
+  style _ _ = "
     margin-right: 5px;
     div {
       display: inline;
     }
   "
-  view props =
+  view { parent, sub_skills } _ _ =
     <div>
-      <Item name={props[:parent]} margin />
+      <Item name={parent} margin />
       {"("}
-      {props[:sub_skills].map fn name i l =>
+      {sub_skills.map fn name i l =>
         <div>
           <Item
             name={name}
@@ -64,27 +56,27 @@ class Skill < Element =
     </div>
 
 class SkillRow < Element =
-  style = "
+  style _ _ = "
     display: flex;
     justify-content: center;
     margin: 0;
     padding: 0;
   "
-  view props =
+  view { skills } _ _ =
     <div>
-      {props[:skills].map #{ <Skill parent={%[:parent]} sub_skills={%[:sub_skills]} /> }}
+      {skills.map #{<Skill parent={%[:parent]} sub_skills={%[:sub_skills]} />}}
     </div>
 
 export class Skills < Element =
-  style = "
+  style _ _ = "
     margin: 10px 20% 0 20%;
     display: flex;
     justify-content: center;
     margin-bottom: 20px;
   "
-  view props =
+  view _ _ _ =
     <div>
       <div>
-        {props[:skills].map #{<SkillRow skills={%} />}}
+        {skills.map #{<SkillRow skills={%} />}}
       </div>
     </div>

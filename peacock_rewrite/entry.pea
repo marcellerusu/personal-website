@@ -1,46 +1,47 @@
 import { Highlight } from "./misc"
 import { skills, skill_context } from "./store"
 
-class Expandable < Details =
-  style = "
+class Expandable < Element =
+  color true = "white"
+  color _ = "unset"
+  style { open } _ = "
     transition: height 200ms ease, background-color 300ms ease-out 0ms;
+    background-color: #{color open};
     &:hover {
       background-color: white;
     }
   "
-
-class Skills < Div =
-  style = "
-    text-decoration: underline dotted;
-    text-decoration-thickness: 1px;
-  "
+  view { open, children } _ _ =
+    <details open={open}>
+      {children}
+    </details>
 
 class Skill < Element =
+  style _ _ = "
+    div {
+      text-decoration: underline dotted;
+      text-decoration-thickness: 1px;
+    }
+  "
   context = skill_context
-  comma cond =
-    if cond
-      ", "
-    else
-      nil
-    end
+  show_comma true = ", "
+  show_comma _ = nil
   selected? selected_skill =
-    if props[:skill] == selected_skill
-      return true
-    end
+    current_skill := props[:skill]
+    return true if current_skill == selected_skill
     skill := skills.flat.find #{ %[:parent] == selected_skill }
-    if skill.nil?
-      return false
-    else
-      return skill[:sub_skills].has? props[:skill]
-    end
-  view props _ selected_skill =
+    return false if skill.nil?
+    skill[:sub_skills].has? current_skill
+  view { comma, skill } _ selected_skill =
     <span>
-      <Highlight active={selected? selected_skill}>{props[:skill]}</Highlight>
-      {comma props[:comma]}
+      <Highlight active={selected? selected_skill}>
+        {skill}
+      </Highlight>
+      {show_comma comma}
     </span>
 
 export class Entry < Element =
-  style = "
+  style _ _ = "
     summary {
       list-style: none;
       cursor: pointer;
@@ -62,38 +63,32 @@ export class Entry < Element =
   "
   context = skill_context
   open? selected_skill =
-    if props[:skills].has? selected_skill
-      return true
-    end
+    return true if props[:skills].has? selected_skill
     skill := skills.flat.find #{ %[:parent] == selected_skill }
-    if skill.nil?
-      return false
-    end
-    return skill[:sub_skills].any? #{ props[:skills].has?(%) }
-
-  view props _ selected_skill =
+    return false if skill.nil?
+    skill[:sub_skills].any? #{ props[:skills].has?(%) }
+  view { title, position, date_range, children, skills } _ selected_skill =
     <div>
       <Expandable open={open? selected_skill}>
         <summary>
-          <h2>{props[:title]}</h2>
+          <h2>{title}</h2>
           <div class_name="position-and-range">
-            <em>{props[:position]}</em>
-            <em>{props[:date_range]}</em>
+            <em>{position}</em>
+            <em>{date_range}</em>
           </div>
         </summary>
         <article>
-          {props[:children]}
-          <Skills>
+          {children}
+          <div>
             {"["}
-            {props[:skills].map fn skill i l =>
+            {skills.map fn skill i l =>
               <Skill
-                skill_context={props[:skill_context]}
                 skill={skill}
                 comma={i < l.last_index}
               />
             end}
             {"]"}
-          </Skills>
+          </div>
         </article>
       </Expandable>
     </div>

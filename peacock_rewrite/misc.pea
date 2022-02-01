@@ -5,7 +5,7 @@ export class Highlight < Div =
     else 
       "unset"
     end
-  style props = "
+  style { active } _ = "
     display: inline;
-    background-color: #{color props[:active]};
+    background-color: #{color active};
   "

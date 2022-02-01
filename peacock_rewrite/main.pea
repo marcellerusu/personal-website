@@ -1,10 +1,9 @@
 import { Header } from "./header"
 import { Skills } from "./skills"
 import { Entry } from "./entry"
-import { skills } from "./store"
 
 class Main < Element =
-  style = "
+  style _ _ = "
     width: 100vw;
     height: 100vh;
     top: 0;
@@ -51,10 +50,10 @@ class Main < Element =
       margin: 0;
     }
   "
-  view =
+  view _ _ _ =
     <div>
       <Header />
-      <Skills skills={skills} />
+      <Skills />
       <Entry
         title="NoRedInk"
         position="Full-Stack Engineer"
