@@ -34,18 +34,6 @@ const Main = styled.div`
   hr {
     margin: 0;
   }
-  h1 {
-    margin: 0;
-    font-size: 60px;
-  }
-  h2 {
-    margin: 0;
-    font-size: 40px;
-  }
-  h3 {
-    margin: 0;
-    font-size: 27px;
-  }
   p {
     margin: 0;
   }

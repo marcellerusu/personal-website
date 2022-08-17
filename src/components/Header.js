@@ -7,22 +7,9 @@ const Container = styled.div`
 
   margin: ${({ isTop }) => (isTop ? "25px 10% 0 10%" : "0")};
   position: sticky;
-
-  h1 {
-    text-align: center;
-    line-height: 1em;
-    padding-bottom: 0.25em;
-    font-size: 40px;
-  }
   @media (max-width: 700px) {
     margin: ${({ isTop }) => (isTop ? "25px 0 0 0" : "0")};
     position: unset;
-    h1 {
-      font-size: 30px;
-    }
-    h3 {
-      font-size: 18px;
-    }
   }
   padding-top: ${({ isTop }) => (isTop ? "0" : "25px")};
   background-color: ${({ isTop }) => (isTop ? "unset" : "#000000b5")};

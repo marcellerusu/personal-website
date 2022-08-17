@@ -5,8 +5,8 @@ const Container = styled.div`
   margin: 25px 10% 0 10%;
   @media (max-width: 700px) {
     margin: ${({ isTop }) => (isTop ? "25px 0 0 0" : "0")};
-    padding-left: 3em;
-    padding-right: 3em;
+    padding-left: 0.5em;
+    padding-right: 0.5em;
   }
   padding-top: ${({ isTop }) => (isTop ? "0" : "25px")};
   position: sticky;

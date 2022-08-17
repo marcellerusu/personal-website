@@ -10,3 +10,31 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
     monospace;
 }
+
+h1 {
+  text-align: center;
+  line-height: 1em;
+  padding-bottom: 0.25em;
+  font-size: 40px;
+}
+
+h1 {
+  margin: 0;
+  font-size: 60px;
+}
+h2 {
+  margin: 0;
+  font-size: 40px;
+}
+h3 {
+  margin: 0;
+  font-size: 27px;
+}
+@media (max-width: 700px) {
+  h1 {
+    font-size: 30px;
+  }
+  h3 {
+    font-size: 18px;
+  }
+}
