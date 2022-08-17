@@ -56,7 +56,7 @@ function App() {
     <Main id="main">
       <Header />
       <Router>
-        <Blog path="/" />
+        <Blog path="/blog/peacock-bind-patterns" />
         <Resume path="/resume" />
       </Router>
     </Main>
