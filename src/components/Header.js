@@ -26,6 +26,7 @@ const Container = styled.div`
     text-align: center;
     line-height: 1em;
     padding-bottom: 0.25em;
+    font-size: 40px;
   }
 `;
 
@@ -36,9 +37,9 @@ const Header = () => {
   }, []);
   return (
     <Container isTop={isTop}>
-      <h1>Marcelle Rusu</h1>
+      <h1>Peacock - Bind Patterns</h1>
       <hr></hr>
-      <h3>Peacock | Bind Patterns | August 16 2022</h3>
+      <h3>Marcelle Rusu | August 16 2022</h3>
     </Container>
   );
 };
