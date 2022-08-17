@@ -52,7 +52,7 @@ function Blog() {
 
         <p>
           One thing that makes Peacock special is how easy it is to define &
-          name patterns via schemas
+          name patterns via schemas.
         </p>
         <pre>
           <code class="language-javascript">
@@ -73,10 +73,10 @@ Nat(num) := -10 // => MatchError
         </p>
         <p>
           One of the more unique aspects of JavaScript is it's dynamic binding
-          of the `this` variable. Notably you can pass in a different value for
-          `this` by using `Function.prototype.call`.
+          of the "this" variable. Notably you can pass in a different value for
+          "this" by using "Function.prototype.call".
         </p>
-        <p>This is correct javascript.</p>
+        <p>This is correct, totally fine™ javascript.</p>
         <pre>
           <code class="language-javascript">
             {`
@@ -94,8 +94,8 @@ add.call(10, 20) // 30
           sugar to let it shine.
         </p>
         <p>
-          Enter the bind operator (this was an active proposal for javascript
-          but it doesn't seem to have made progress recently)
+          Enter the bind operator. (This feature was an active proposal for
+          javascript but it doesn't seem to have made progress recently)
         </p>
         <pre>
           <code class="language-javascript">
@@ -108,7 +108,7 @@ function add(num) {
 `.trim()}
           </code>
         </pre>
-        <p>This looks very similar in peacock so we'll return to that</p>
+        <p>This looks very similar in peacock so we'll return to that.</p>
         <pre>
           <code class="language-javascript">
             {`
@@ -119,9 +119,10 @@ function add(num) = this + num
           </code>
         </pre>
         <p>
-          Lets look at something more useful. Something that I really miss from
-          working in ruby is the ability to call #to_a on pretty much anything &
-          it would work as expected.
+          Lets look at something more useful.
+          <br />
+          Something that I really miss from working in ruby is the ability to
+          call #to_a on pretty much anything & it would work as expected.
         </p>
         <pre>
           <code class="language-javascript">{`
@@ -136,20 +137,23 @@ new Set([1, 2, 3])::to_a // => [1, 2, 3]
           This is great! I really really love this syntax for a few reasons but
           primarily
           <ul>
-            <li>Its chainable</li>
+            <li>Its chainable!</li>
+            <li>It feels idiomatic!</li>
             <li>
               We can "extend" core objects without modifying their prototype!!
-              Even more so while still feeling idiomatic!
             </li>
           </ul>
           <br></br>
           That last point is especially important for me. There are so many
-          missing methods on Arrays & Objects that I would absolutely love (as
-          well as making everything snake_case because why not). But I don't
-          like modifying the prototype because of the inherent risk of being
-          overwritten & its not as clear that this is a user defined change.
-          <br></br>Now when you see <code>::</code>, you can go "Oh this is an
-          extension method"
+          missing methods on Arrays & Objects that I would absolutely love like
+          #uniq & #zip (as well as making everything snake_case).
+          <br />
+          But I don't like modifying the prototype because of the inherent risk
+          of the method being overwritten & from a user's perspective it would
+          be nice to know this method is a user defined change.
+          <br />
+          Now when I see <code>::</code>, I can go "Oh this is an extension
+          method!"
         </p>
         <p>There's one problem though...</p>
         <pre>
@@ -158,11 +162,11 @@ new Set([1, 2, 3])::to_a // => [1, 2, 3]
 `}</code>
         </pre>
         <p>
-          As much as Array.from is great & works even more than I expect it to,
-          it has its limits. That's where case functions & Bind Patterns come
-          in.
+          As much as Array.from is great & has served me more than I've expect
+          it to, it has its limits. That's where case functions & Bind Patterns
+          come in.
           <br />
-          First lets take a quick look at how case functions.
+          First lets take a quick look at how to define case functions.
         </p>
         <pre>
           <code class="language-javascript">
@@ -185,11 +189,11 @@ console.log fib(3) // 2
           pattern match on the function arguments & if you've seen this before
           there's nothing very new here.
           <br />
-          When I was implemented the bind operator & playing around with it, it
-          became obvious we're missing something here. There's always an
-          implicit parameter to each function in JavaScript "this" & it should
-          be matchable. Together with our old <code>::to_a</code> idea, we can
-          fix our issue.
+          When I was implemented the bind operator & played around with it, it
+          became obvious that I was missing something here. There's always an
+          implicit parameter to each function in JavaScript - "this" & it should
+          be included in the pattern match. This can fix our issue with calling{" "}
+          <code>::to_a</code> on objects.
         </p>
         <pre>
           <code class="language-javascript">
@@ -212,8 +216,14 @@ console.log { a: 10 }::to_a // [["a", 10]]
           </code>
         </pre>
         <p>
+          The syntax is specified in this way -
+          <br />
+          what comes before the <code>::</code> is a pattern on "this", and what
+          comes after is a pattern on the function arguments.
+        </p>
+        <p>
           This makes me so happy. I think the syntax lends itself very naturally
-          & this paves a way for defining a new standard library on top of plain
+          & paves a way for defining a new standard library on top of plain
           JavaScript objects without modifying anything!
         </p>
         <p>Here are some other examples I'm excited about</p>
@@ -222,6 +232,7 @@ console.log { a: 10 }::to_a // [["a", 10]]
           <code class="language-javascript">
             {`
 
+// I'm not familiar with performant implementations for unique, so go easy on me :)
 case function uniq
 when Array::()
   new Set(this)::to_a
@@ -238,14 +249,22 @@ console.log [{ a: 10 }, { a: 10 }]::uniq "a"
 // => [{ a: 10 }]
 console.log [22, 31, 32]::uniq #{ |item| item % 10 }
 // => [22, 31]
+
+case function zip
+when (first, second)
+  first.map((x, i) => [x, second[i]])
+when Array::(second)
+  zip this, second
+end
+
+console.log zip([1, 2], [3, 4])
+// => [[1, 3], [2, 4]]
+console.log [1, 2]::zip([3, 4])
+// => [[1, 3], [2, 4]]
 `.trim()}
           </code>
         </pre>
-        <p>
-          Ok now not all of these are useful, but a lot of them are and we can
-          build up quite a nice standard library for peacock by utilizing these
-          features in combination.
-        </p>
+        <p>Thanks for reading.</p>
       </section>
     </Container>
   );
