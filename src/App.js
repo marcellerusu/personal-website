@@ -2,14 +2,12 @@ import { Router } from "@reach/router";
 import styled from "styled-components";
 
 import Header from "./components/Header";
-import Summary from "./pages/Summary";
 import Resume from "./pages/Resume";
-import Peacock from "./pages/Peacock";
+import Blog from "./pages/Blog";
 
 const Main = styled.div`
   font-size: 20px;
   * {
-    font-weight: 100;
     text-decoration-thickness: 1px;
   }
   a {
@@ -58,8 +56,8 @@ function App() {
     <Main id="main">
       <Header />
       <Router>
-        <Resume path="/" />
-        <Peacock path="peacock" />
+        <Blog path="/" />
+        <Resume path="/resume" />
       </Router>
     </Main>
   );
