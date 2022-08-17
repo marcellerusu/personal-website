@@ -6,11 +6,25 @@ const Container = styled.div`
     background-color 300ms ease-in-out 0ms;
 
   margin: ${({ isTop }) => (isTop ? "25px 10% 0 10%" : "0")};
+  position: sticky;
+
+  h1 {
+    text-align: center;
+    line-height: 1em;
+    padding-bottom: 0.25em;
+    font-size: 40px;
+  }
   @media (max-width: 700px) {
     margin: ${({ isTop }) => (isTop ? "25px 0 0 0" : "0")};
+    position: unset;
+    h1 {
+      font-size: 30px;
+    }
+    h3 {
+      font-size: 18px;
+    }
   }
   padding-top: ${({ isTop }) => (isTop ? "0" : "25px")};
-  position: sticky;
   background-color: ${({ isTop }) => (isTop ? "unset" : "#000000b5")};
   color: ${({ isTop }) => (isTop ? "unset" : "white")};
   top: 0px;
@@ -22,12 +36,6 @@ const Container = styled.div`
     width: 100%;
   }
   /* Mobile */
-  h1 {
-    text-align: center;
-    line-height: 1em;
-    padding-bottom: 0.25em;
-    font-size: 40px;
-  }
 `;
 
 const Header = () => {
