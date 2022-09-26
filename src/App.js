@@ -1,9 +1,12 @@
+import { useState } from "react";
 import { Router } from "@reach/router";
 import styled from "styled-components";
 
 import Header from "./components/Header";
 import Resume from "./pages/Resume";
 import Blog from "./pages/Blog";
+import ToyJs from "./pages/ToyJs";
+import { header, subHeader } from "./components/Header";
 
 const Main = styled.div`
   font-size: 20px;
@@ -40,14 +43,22 @@ const Main = styled.div`
 `;
 
 function App() {
+  let headerState = useState("");
+  let subHeaderState = useState("");
+
   return (
-    <Main id="main">
-      <Header />
-      <Router>
-        <Blog path="/blog/peacock-bind-patterns" />
-        <Resume path="/resume" />
-      </Router>
-    </Main>
+    <header.Provider value={headerState}>
+      <subHeader.Provider value={subHeaderState}>
+        <Main id="main">
+          <Header />
+          <Router>
+            <Blog path="/blog/peacock-bind-patterns" />
+            <ToyJs path="/blog/toy-js" />
+            <Resume path="/resume" />
+          </Router>
+        </Main>
+      </subHeader.Provider>
+    </header.Provider>
   );
 }
 

@@ -1,4 +1,4 @@
-import { useLayoutEffect, useState } from "react";
+import { createContext, useContext, useLayoutEffect, useState } from "react";
 import styled from "styled-components";
 
 const Container = styled.div`
@@ -25,16 +25,22 @@ const Container = styled.div`
   /* Mobile */
 `;
 
+export let header = createContext(["", () => {}]);
+export let subHeader = createContext(["", () => {}]);
+
 const Header = () => {
   const [isTop, setIsTop] = useState(true);
+  let [header_] = useContext(header);
+  let [subHeader_] = useContext(subHeader);
+  console.log(header_);
   useLayoutEffect(() => {
     window.addEventListener("scroll", () => setIsTop(window.scrollY < 10));
   }, []);
   return (
     <Container isTop={isTop}>
-      <h1>Peacock - Bind Patterns</h1>
+      <h1>{header_}</h1>
       <hr></hr>
-      <h3>Marcelle Rusu | August 16 2022</h3>
+      <h3>{subHeader_}</h3>
     </Container>
   );
 };

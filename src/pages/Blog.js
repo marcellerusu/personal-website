@@ -1,5 +1,6 @@
-import { useEffect } from "react";
+import { useContext, useEffect } from "react";
 import styled from "styled-components";
+import { header, subHeader } from "../components/Header";
 
 const Container = styled.div`
   margin: 25px 10% 0 10%;
@@ -33,9 +34,14 @@ const Container = styled.div`
 `;
 
 function Blog() {
+  let [, setHeader] = useContext(header);
+  let [, setSubHeader] = useContext(subHeader);
+
   useEffect(() => {
     window.hljs.highlightAll();
-  });
+    setHeader("Peacock - Bind Patterns");
+    setSubHeader("Marcelle Rusu | August 16 2022");
+  }, [setHeader, setSubHeader]);
   return (
     <Container>
       <section>
@@ -55,7 +61,7 @@ function Blog() {
           name patterns via schemas.
         </p>
         <pre>
-          <code class="language-javascript">
+          <code className="language-javascript">
             {`
 schema Zero = 0
 Zero(num) := 10 // => MatchError
@@ -78,7 +84,7 @@ Nat(num) := -10 // => MatchError
         </p>
         <p>This is correct, totally fine™ javascript.</p>
         <pre>
-          <code class="language-javascript">
+          <code className="language-javascript">
             {`
 function add(num) {
   return this + num;
@@ -98,7 +104,7 @@ add.call(10, 20) // 30
           javascript but it doesn't seem to have made progress recently)
         </p>
         <pre>
-          <code class="language-javascript">
+          <code className="language-javascript">
             {`
 function add(num) {
   return this + num;
@@ -110,7 +116,7 @@ function add(num) {
         </pre>
         <p>This looks very similar in peacock so we'll return to that.</p>
         <pre>
-          <code class="language-javascript">
+          <code className="language-javascript">
             {`
 function add(num) = this + num
 
@@ -125,7 +131,7 @@ function add(num) = this + num
           call #to_a on pretty much anything & it would work as expected.
         </p>
         <pre>
-          <code class="language-javascript">{`
+          <code className="language-javascript">{`
 function to_a = Array.from this
 
 [1, 2, 3]::to_a // => [1, 2, 3]
@@ -157,7 +163,7 @@ new Set([1, 2, 3])::to_a // => [1, 2, 3]
         </p>
         <p>There's one problem though...</p>
         <pre>
-          <code class="language-javascript">{`
+          <code className="language-javascript">{`
 { a: 10 }::to_a // []
 `}</code>
         </pre>
@@ -169,7 +175,7 @@ new Set([1, 2, 3])::to_a // => [1, 2, 3]
           First lets take a quick look at how to define case functions.
         </p>
         <pre>
-          <code class="language-javascript">
+          <code className="language-javascript">
             {`
 case function fib
 when (0)
@@ -196,7 +202,7 @@ console.log fib(3) // 2
           <code>::to_a</code> on objects.
         </p>
         <pre>
-          <code class="language-javascript">
+          <code className="language-javascript">
             {`
 case function to_a
 when Array::()
@@ -229,7 +235,7 @@ console.log { a: 10 }::to_a // [["a", 10]]
         <p>Here are some other examples I'm excited about</p>
 
         <pre>
-          <code class="language-javascript">
+          <code className="language-javascript">
             {`
 
 // I'm not familiar with performant implementations for unique, so go easy on me :)
