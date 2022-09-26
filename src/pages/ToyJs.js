@@ -40,7 +40,7 @@ function Blog() {
     window.hljs.highlightAll();
     setHeader("Toy JS - Compile-to-js Lanugage");
     setSubHeader("Marcelle Rusu | Sept 26 2022");
-  }, []);
+  }, [setHeader, setSubHeader]);
   return (
     <Container>
       <section>
